@@ -1,3 +1,8 @@
 .vscode
+.venv
 build
 instances
+aux
+output
+networkit
+status.cache

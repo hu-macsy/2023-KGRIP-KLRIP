@@ -41,81 +41,9 @@ typedef decltype(std::chrono::high_resolution_clock::now()) Time;
 // The greedy algorithms in this file optimize for large -R_tot.
 
 
-template <class DynamicLaplacianSolver>
-class RobustnessRandomAveraged : public virtual AbstractOptimizer<Edge> {
+class RobustnessExhaustiveSearch : public virtual AbstractOptimizer<Edge> {
 public:
-    RobustnessRandomAveraged(GreedyParams params) : g(params.g), k(params.k) {}
-
-    virtual void run() override {
-        std::set<std::pair<unsigned int, unsigned int>> es;
-        int n = g.numberOfNodes();
-        if (n*(n-1)/2 - g.numberOfEdges() < k) {
-            throw std::logic_error("Graph does not allow requested number of edges.");
-        }
-        //auto lpinv = laplacianPseudoinverse(g);
-
-        for (int repetitions = 0; repetitions < 10; repetitions++) {
-            solver.setup(g, 0.1, 2);
-            double resistance = 0.;
-            result.clear();
-            es.clear();
-            for (int i = 0; i < k; i++) {
-                do {
-                    NetworKit::count u = std::rand() % n;
-                    NetworKit::count v = std::rand() % n;
-                    if (u > v) {
-                        std::swap(u, v);
-                    }
-
-
-                    auto e = std::pair<unsigned int, unsigned int> (u, v);
-                    if (u != v && !g.hasEdge(u,v) && !g.hasEdge(v,u) && es.count(std::pair<unsigned int, unsigned int>(u, v)) == 0) {
-                        solver.computeColumns({u, v});
-                        resistance += solver.totalResistanceDifferenceApprox(u, v);
-                        es.insert(e);
-                        solver.addEdge(u, v);
-                        result.push_back(NetworKit::Edge(u, v));
-                        break;
-                    }
-                } while (true);
-            }
-            double r = static_cast<double>(repetitions);
-            resultValue = r / (r+1.) * resultValue + 1. / (r+1.) * resistance;
-        }
-        resultValue *= -1.;
-    }
-
-    virtual double getResultValue() override {
-        return resultValue;
-    }
-
-    virtual double getOriginalValue() override {
-        return originalValue;
-    }
-
-    virtual std::vector<Edge> getResultItems() override {
-        return result;
-    }
-
-    virtual bool isValidSolution() {
-        return true;
-    }
-
-private:
-    Graph &g;
-    count k;
-    std::vector<NetworKit::Edge> result;
-    double originalValue = 0.;
-    double resultValue = 1.;
-    DynamicLaplacianSolver solver;
-};
-
-
-// ===========================================================================
-
-class RobustnessExaustiveSearch : public virtual AbstractOptimizer<Edge> {
-public:
-     RobustnessExaustiveSearch(GreedyParams params) : g(params.g), k(params.k) {}
+     RobustnessExhaustiveSearch(GreedyParams params) : g(params.g), k(params.k) {}
 
     virtual void run() override {
       std::vector<NetworKit::Edge> es;
@@ -176,8 +104,6 @@ private:
     double totalValue = 0.;
     Eigen::MatrixXd lpinv;
 };
-
-// ===========================================================================
 
 
 class RobustnessSubmodularGreedy final : public SubmodularGreedy<Edge> {
@@ -247,7 +173,7 @@ private:
 };
 
 
-class RobustnessSqGreedy final : public AbstractOptimizer<NetworKit::Edge> {
+class RobustnessSqGreedy final : public AbstractOptimizer<Edge> {
 public:
     RobustnessSqGreedy(GreedyParams params) {
 
@@ -406,8 +332,6 @@ private:
   double epsilon = 0.1;
   int k;
 };
-
-
 
 
 class RobustnessStochasticGreedy : public StochasticGreedy<Edge>{
@@ -888,100 +812,6 @@ private:
   //
   DynamicLaplacianSolver lap_solver;
 };
-
-
-
-
-
-// Store laplacian as std::vector instead of Eigen::Matrix and update on demand. Appears to slightly improve performance over the normal submodular greedy; very slightly improved cache access properties
-class RobustnessSubmodularGreedy2 final : public SubmodularGreedy<Edge>{
-public:
-    RobustnessSubmodularGreedy2(GreedyParams params) {
-        this->g = params.g;
-        this->n = g.numberOfNodes();
-        this->k = params.k;
-        this->age = std::vector<int>(n);
-
-        // Compute pseudoinverse of laplacian
-        auto lpinv = laplacianPseudoinverse(g);
-        this->totalValue = lpinv.trace() * n * (-1.0);
-        for (int i = 0; i < n; i++) {
-            this->lpinvVec.push_back(lpinv.col(i));
-        }
-        this->originalResistance = -1. * this->totalValue;
-    }
-
-    virtual void addDefaultItems() {
-        // Add edges to items of greedy
-        std::vector<Edge> items;
-        for (size_t i = 0; i < this->n; i++)
-        {
-            for (size_t j = 0; j < i; j++)
-            {
-                if (i != j && !this->g.hasEdge(i, j)) {
-                    items.push_back(Edge(i,j));
-                }
-            }
-        }
-        
-        this->addItems(items);
-    }
-
-    virtual double getResultValue() override {
-        return this->totalValue * (-1.0);
-    }
-    virtual double getOriginalValue() override {
-        return this->originalResistance;
-    }
-
-
-    virtual std::vector<NetworKit::Edge> getResultItems() override{
-        return this->results;
-    }
-    
-private:
-
-    virtual double objectiveDifference(Edge e) override {
-        auto i = e.u;
-        auto j = e.v;
-        
-        this->updateColumn(i);
-        this->updateColumn(j);
-        return (-1.0) * this->n * laplacianPseudoinverseTraceDifference(this->lpinvVec[i], i, this->lpinvVec[j], j);
-    }
-
-    virtual void useItem(Edge e) override {
-        auto i = e.u;
-        auto j = e.v;
-        this->updateColumn(i);
-        this->updateColumn(j);
-        double R_ij = lpinvVec[i](i) + lpinvVec[j](j) - 2. * lpinvVec[j](i);
-        double w = 1.0 / (1.0 + R_ij);
-
-        updateVec.push_back(this->lpinvVec[i] - this->lpinvVec[j]);
-        updateW.push_back(w);
-        //updateLaplacianPseudoinverse(this->lpinv, e);
-        //this->g.addEdge(e.u, e.v);
-    }
-
-    void updateColumn(int i) {
-        if (age[i] < this->round) {
-            for (int r = age[i]; r < this->round; r++)
-                lpinvVec[i] -= updateVec[r] * updateVec[r](i) * updateW[r];
-            age[i] = this->round;
-        }
-    }
-
-    Graph g;
-    int n;
-    double originalResistance;
-    std::vector<Eigen::VectorXd> updateVec;
-    std::vector<double> updateW;
-    std::vector<int> age;
-    std::vector<Eigen::VectorXd> lpinvVec;
-};
-
-
 
 
 #endif // ROBUSTNESS_GREEDY_H

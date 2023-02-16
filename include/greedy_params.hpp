@@ -33,11 +33,9 @@ public:
   unsigned int updatePerRound = 1;
   unsigned int diff = 1;
   NetworKit::Graph& g;
-  unsigned int threads = 1;
   HeuristicType heuristic;
   CandidateSetSize candidatesize;
   NetworKit::count similarityIterations = 100;
-  double similarityPhi = 0.25;
   bool always_use_known_columns_as_candidates = false;
 };
 

@@ -54,7 +54,7 @@ template <class Item>
 class SubmodularGreedy : public AbstractOptimizer<Item> {
 public:
 	virtual void run() override;
-        void set_k(int k) { this->k = k; }
+    void set_k(int k) { this->k = k; }
 	
 	// To obtain results
 	int getResultSize() { return round+1; }
@@ -62,20 +62,20 @@ public:
 	double getTotalValue() { return totalValue; }
 	virtual bool isValidSolution() override { return validSolution; }
   
-        void summarize() {
-                std::cout << "Greedy Results Summary. ";
-                if (!this->hasRun) {
-                        std::cout << "Not executed yet!";
-                }
-                std::cout << "Result Size: " << this->getResultSize() << std::endl;
-                if (this->getResultSize() < 1000) {
-                        for (auto e: this->getResultItems()) {
-                                std::cout << "(" << e.u << ", " << e.v << "), "; 
-                        }
-                }
-                std::cout << std::endl;
-                std::cout << "Total Value: " << this->getTotalValue() << std::endl;
+    void summarize() {
+        std::cout << "Greedy Results Summary. ";
+        if (!this->hasRun) {
+            std::cout << "Not executed yet!";
         }
+        std::cout << "Result Size: " << this->getResultSize() << std::endl;
+        if (this->getResultSize() < 1000) {
+            for (auto e: this->getResultItems()) {
+                std::cout << "(" << e.u << ", " << e.v << "), "; 
+            }
+        }
+        std::cout << std::endl;
+        std::cout << "Total Value: " << this->getTotalValue() << std::endl;
+    }
         
 protected:
 	using ItemWrapper=_ItemWrapperType<Item>;
@@ -85,20 +85,20 @@ protected:
 	virtual bool checkSolution() { return this->round == this->k - 1; };
 	virtual bool isItemAcceptable(Item c) { return true; }
 	virtual void initRound() {}
-        virtual void addDefaultItems() {};
-        
+    virtual void addDefaultItems() {};
+    
 
-        void addItems(std::vector<Item> items);
-        void resetItems();
-        
-        
-        std::priority_queue<ItemWrapper> itemQueue;
-        
-        bool validSolution = false;
-        int round=0;
-        std::vector<Item> results;
-        double totalValue = 0.0;
-        int k;
+    void addItems(std::vector<Item> items);
+    void resetItems();
+    
+    
+    std::priority_queue<ItemWrapper> itemQueue;
+    
+    bool validSolution = false;
+    int round=0;
+    std::vector<Item> results;
+    double totalValue = 0.0;
+    int k;
 };
 
 
@@ -192,17 +192,9 @@ void SubmodularGreedy<Item>::run() {
 
 
 
-
-
-
-
-
 // Stochastic Greedy
 // Implementation of 
 // Baharan Mirzasoleiman, Ashwinkumar Badanidiyuru, Amin Karbasi, Jan Vondrak, Andreas Krause:  Lazier Than Lazy Greedy. https://arxiv.org/abs/1409.7938
-
-
-
 
 template <class Item>
 struct _ItemWrapperType2 {
@@ -213,20 +205,17 @@ struct _ItemWrapperType2 {
     bool selected;
 };
 
-
 template <class Item>
 bool operator<(const _ItemWrapperType2<Item> &left, const _ItemWrapperType2<Item> &right) {
 	return left.value < right.value || (right.value == left.value && left.item < right.item);
 }
 
-
-
 template <class Item>
 class StochasticGreedy : public AbstractOptimizer<Item> {
 public:
-        using ItemWrapper=_ItemWrapperType2<Item>;
-        void set_k(int k) { this->k = k; }
-        void set_epsilon(double epsilon) { assert(0.0 <= epsilon && epsilon <= 1.0); this->epsilon = epsilon; }
+    using ItemWrapper=_ItemWrapperType2<Item>;
+    void set_k(int k) { this->k = k; }
+    void set_epsilon(double epsilon) { assert(0.0 <= epsilon && epsilon <= 1.0); this->epsilon = epsilon; }
 
 	virtual void run() override;
 	
@@ -236,11 +225,11 @@ public:
 	double getTotalValue() { return totalValue; }
 	virtual bool isValidSolution() override { return validSolution; }
 
-        void printItems() {
-	    DEBUG("NUMBER OF ITEMS = ", items.size());
-	    for (auto e = 0; e < items.size(); e++) {
-	        DEBUG("ITEM:(", items[e].item.u, " ,",  items[e].item.v, ") value = ", items[e].value, " lastUpdated = ", items[e].lastUpdated, " index = ", items[e].index, " selected = ", items[e].selected);
-	    }
+    void printItems() {
+        DEBUG("NUMBER OF ITEMS = ", items.size());
+        for (auto e = 0; e < items.size(); e++) {
+            DEBUG("ITEM:(", items[e].item.u, " ,",  items[e].item.v, ") value = ", items[e].value, " lastUpdated = ", items[e].lastUpdated, " index = ", items[e].index, " selected = ", items[e].selected);
+        }
 	}
   
 	void summarize() {
@@ -263,21 +252,21 @@ protected:
 	virtual bool checkSolution() { return this->round + 1 == this->k; };
 	virtual bool isItemAcceptable(Item c) { return true; }
 	virtual void initRound() {}
-        virtual void addDefaultItems() {};
+    virtual void addDefaultItems() {};
 
-        void addItems(std::vector<Item> items);
+    void addItems(std::vector<Item> items);
 	void resetItems();
 
 
 	std::vector<ItemWrapper> items;
 
-        int N;
+    int N;
 	bool validSolution = false;
 	int round=0;
 	std::vector<Item> results;
 	double totalValue=0.0;
-        int k;
-        double epsilon=0.1;
+    int k;
+    double epsilon=0.1;
 };
 
 template <class Item>

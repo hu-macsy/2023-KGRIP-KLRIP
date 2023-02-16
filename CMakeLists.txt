@@ -15,7 +15,7 @@ include_directories(eigen)
 find_package(OpenMP)
 add_subdirectory(networkit)
 
-add_executable(robustness main cpp/greedy.cpp cpp/laplacian.cpp cpp/dynamicLaplacianSolver.cpp cpp/robustnessGreedy.cpp cpp/robustnessUSTGreedy.cpp cpp/slepc_adapter.cpp)
+add_executable(robustness main.cpp cpp/greedy.cpp cpp/laplacian.cpp cpp/dynamicLaplacianSolver.cpp cpp/robustnessGreedy.cpp cpp/robustnessUSTGreedy.cpp cpp/slepc_adapter.cpp)
 
 target_compile_options(robustness PUBLIC -g -O3 -fno-omit-frame-pointer)
 target_compile_options(networkit PUBLIC -Wno-deprecated-declarations -g -O3 -fno-omit-frame-pointer)

@@ -185,6 +185,13 @@ public:
     std::cout << "  k: " << k << "\n";
     std::cout << "  Call: " << call << "\n";
     std::cout << "  Threads:  " << threads << "\n";
+    std::cout << "  Candidate size:  ";
+    if (candidatesize == CandidateSetSize::small) {
+      std::cout << "small\n";
+    } else if (candidatesize == CandidateSetSize::large) {
+      std::cout << "large\n";
+    }
+    std::cout << "  SolverEpsilon:  " << params->solverEpsilon << "\n";
     std::cout << "  All-Columns: ";
     if (params->always_use_known_columns_as_candidates) {
       std::cout << "True\n";
@@ -224,6 +231,7 @@ public:
         heuristicName = "Random";
       }
       std::cout << "  Heuristic: " << heuristicName << "\n";
+      std::cout << "  similarityIterations: " << params->similarityIterations << "\n";
       std::cout << "  Epsilon2: " << epsilon2 << "\n";
     }
 
@@ -292,6 +300,7 @@ public:
                 << spectralOriginalResistance - spectralResultResistance
                 << "\n";
       std::cout << "  Eigenpairs:  " << (double)(100 * ne) / n << "\n";
+      std::cout << "  ne:  " << ne << "\n";
       std::cout << "  Max Eigenvalue:  " << greedy->getMaxEigenvalue() << "\n";
       std::cout << "  Diff2:  " << diff << "\n";
       std::cout << "  UpdatePerRound:  " << updatePerRound << "\n";

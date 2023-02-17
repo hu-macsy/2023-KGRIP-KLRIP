@@ -11,18 +11,24 @@
         
 ### Requirements
         
-Initialize submodules. Access to the separate NetworKit fork is at https://gitlab.informatik.hu-berlin.de/goergmat/networkit-robustness is required.
+Initialize submodules. Access to the separate NetworKit fork at https://gitlab.informatik.hu-berlin.de/goergmat/networkit-robustness is required.
+
     git submodule update --init --recursive
-Eigen (currently assumed to be in _eigen_ folder in root)    
-PETSc and SLEPc
-    Set environment variables PETSC_DIR, SLEPC_DIR and PETSC_ARCH accordingly
-        
+
+* Eigen (currently assumed to be in _eigen_ folder in root)    
+* PETSc and SLEPc. Set environment variables PETSC_DIR, SLEPC_DIR and PETSC_ARCH accordingly
+
 ### Building
 
     mkdir build
     cd build
     cmake .. [-DNETWORKIT_WITH_SANITIZERS=address]
     make
+
+To run python scripts with the NetworKit fork, install the submodule (you should use a venv)
+
+    pip install -e networkit
+
 
 ## Download Instances
 

@@ -97,9 +97,9 @@ private:
   Eigen::MatrixXd lpinv;
 };
 
-class RobustnessSubmodularGreedy final : public SubmodularGreedy<Edge> {
+class StGreedy final : public SubmodularGreedy<Edge> {
 public:
-  RobustnessSubmodularGreedy(GreedyParams params) {
+  StGreedy(GreedyParams params) {
     this->g = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
@@ -159,9 +159,9 @@ private:
   int n;
 };
 
-class RobustnessSqGreedy final : public AbstractOptimizer<Edge> {
+class SimplStochJLT final : public AbstractOptimizer<Edge> {
 public:
-  RobustnessSqGreedy(GreedyParams params) {
+  SimplStochJLT(GreedyParams params) {
 
     this->g = params.g;
     this->n = g.numberOfNodes();
@@ -332,9 +332,9 @@ private:
   int k;
 };
 
-class RobustnessStochasticGreedy : public StochasticGreedy<Edge> {
+class SimplStoch : public StochasticGreedy<Edge> {
 public:
-  RobustnessStochasticGreedy(GreedyParams params) {
+  SimplStoch(GreedyParams params) {
 
     this->g = params.g;
     this->n = g.numberOfNodes();
@@ -401,9 +401,9 @@ private:
 
 // template <class DynamicLaplacianSolver=LamgDynamicLaplacianSolver>
 template <class DynamicLaplacianSolver>
-class RobustnessStochasticGreedyDyn : public StochasticGreedy<Edge> {
+class ColStoch : public StochasticGreedy<Edge> {
 public:
-  RobustnessStochasticGreedyDyn(GreedyParams params) {
+  ColStoch(GreedyParams params) {
     this->g = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
@@ -557,9 +557,9 @@ private:
 };
 
 template <class DynamicLaplacianSolver>
-class RobustnessStochasticGreedySpectral : public StochasticGreedy<Edge> {
+class SpecStoch : public StochasticGreedy<Edge> {
 public:
-  RobustnessStochasticGreedySpectral(GreedyParams params) {
+  SpecStoch(GreedyParams params) {
     this->g = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;

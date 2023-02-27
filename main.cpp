@@ -104,22 +104,22 @@ public:
   void createGreedy() {
     if (alg == AlgorithmType::stGreedy) {
       algorithmName = "stGreedy";
-      createSpecific<RobustnessSubmodularGreedy>();
+      createSpecific<StGreedy>();
     } else if (alg == AlgorithmType::simplStoch) {
       algorithmName = "simplStoch";
-      createSpecific<RobustnessStochasticGreedy>();
+      createSpecific<SimplStoch>();
     } else if (alg == AlgorithmType::simplStochJLT) {
       algorithmName = "simplStochJLT";
-      createSpecific<RobustnessSqGreedy>();
+      createSpecific<SimplStochJLT>();
     } else if (alg == AlgorithmType::colStochJLT) {
       algorithmName = "colStochJLT";
-      createLinAlgGreedy<RobustnessTreeGreedy>();
+      createLinAlgGreedy<ColStochJLT>();
     } else if (alg == AlgorithmType::colStoch) {
       algorithmName = "colStoch";
-      createLinAlgGreedy<RobustnessStochasticGreedyDyn>();
+      createLinAlgGreedy<ColStoch>();
     } else if (alg == AlgorithmType::specStoch) {
       algorithmName = "specStoch";
-      createLinAlgGreedy<RobustnessStochasticGreedySpectral>();
+      createLinAlgGreedy<SpecStoch>();
     } else if (alg == AlgorithmType::exhaustive) {
       algorithmName = "Exhaustive";
       createSpecific<RobustnessExhaustiveSearch>();

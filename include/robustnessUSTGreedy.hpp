@@ -39,9 +39,9 @@ inline bool operator<(const QueueItem &left, const QueueItem &right) {
 
 template <class DynamicLaplacianSolver = LamgDynamicLaplacianSolver>
 // using DynamicLaplacianSolver = LeastSquaresDynamicLaplacianSolver;
-class RobustnessTreeGreedy final : public AbstractOptimizer<NetworKit::Edge> {
+class ColStochJLT final : public AbstractOptimizer<NetworKit::Edge> {
 public:
-  RobustnessTreeGreedy(GreedyParams params) : G(params.g) {
+  ColStochJLT(GreedyParams params) : G(params.g) {
 
     this->n = G.numberOfNodes();
     this->k = params.k;

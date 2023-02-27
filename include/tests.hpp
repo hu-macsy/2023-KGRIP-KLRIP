@@ -390,7 +390,7 @@ void testRobustnessSubmodularGreedy() {
   }
 
   GreedyParams args(G2, 2);
-  RobustnessSubmodularGreedy rg2(args);
+  StGreedy rg2(args);
   rg2.run();
   assert(std::abs(rg2.getTotalValue() - 4.351) < 0.01);
 
@@ -405,7 +405,7 @@ void testRobustnessSubmodularGreedy() {
   G3.addEdge(5, 10);
 
   GreedyParams args2(G3, 4);
-  RobustnessSubmodularGreedy rg3(args2);
+  StGreedy rg3(args2);
   rg3.run();
   assert(std::abs(rg3.getTotalValue() - 76.789) < 0.01);
   // rg3.summarize();
@@ -432,7 +432,7 @@ void testRobustnessStochasticGreedySpectral() {
   }
 
   GreedyParams args(G2, 2);
-  RobustnessStochasticGreedySpectral<SparseLUSolver> rg2(args);
+  SpecStoch<SparseLUSolver> rg2(args);
   // createSpecific<RobustnessRandomAveraged<SparseLUSolver>>()
   rg2.run();
   assert(std::abs(rg2.getTotalValue() - 4.351) < 0.01);
@@ -448,7 +448,7 @@ void testRobustnessStochasticGreedySpectral() {
   G3.addEdge(5, 10);
 
   GreedyParams args2(G3, 4);
-  RobustnessStochasticGreedySpectral<SparseLUSolver> rg3(args2);
+  SpecStoch<SparseLUSolver> rg3(args2);
   rg3.run();
   assert(std::abs(rg3.getTotalValue() - 76.789) < 0.01);
   // rg3.summarize();

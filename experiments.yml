@@ -2,26 +2,50 @@ experiments:
   - name: stGreedy
     args: ['./build/robustness', '-a1', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
+    use_builds: [graph-robustness-k]
   - name: simplStoch
     args: ['./build/robustness', '-a2', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
+    use_builds: [graph-robustness-k]
   - name: colStoch
     args: ['./build/robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@'] # hier war --lamg drin. aber das passt nicht zum paper. also rausgenommen (und es ist ja auch ein variant)
     stdout: out
+    use_builds: [graph-robustness-k]
   - name: simplStochJLT
     args: ['./build/robustness', '-a5', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
+    use_builds: [graph-robustness-k]
   - name: colStochJLT
     args: ['./build/robustness', '-a6', '-i', '@INSTANCE@', '@EXTRA_ARGS@', '-v']
     stdout: out
+    use_builds: [graph-robustness-k]
     #slurm_args: ['--partition=single', '--nodelist=ego']
   - name: specStoch
     args: ['./build/robustness', '-a7', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
+    use_builds: [graph-robustness-k]
   - name: exhaustive-search
     args: ['./build/robustness', '-a8', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
+    use_builds: [graph-robustness-k]
 
+builds:
+  - name: graph-robustness-k
+    git: https://github.com/predari/graph-robustness-k
+    recursive-clone: true
+    configure:
+      - args:
+        - 'cmake'
+        - '@THIS_CLONE_DIR@'
+    compile:
+      - args:
+        - 'make'
+        - '-j@PARALLELISM@'
+
+revisions:
+  - name: k-grip
+    build_version:
+      'graph-robustness-k': '8f09202598e3e1b4245ee280ced05c61c8fc22e9'
 
 variants:
   - axis: 'k-size'
@@ -80,7 +104,7 @@ variants:
 instdir: "instances"
 instances:
   - repo: local
-    set: [medium-graphs]
+    set: [medium-graphs, additional-exhaustive-search]
     items: 
       - inf-power.nkb
       - facebook_ego_combined.nkb
@@ -90,11 +114,14 @@ instances:
       - p2p-Gnutella04.nkb
       - web-indochina-2004.nkb
       - arxiv-heph.nkb
-      - web-webbase-2001.nkb
-      - arxiv-astro-ph.nkb
-      - as-caida20071105.nkb
-      - cit-HepTh.nkb
-      - ia-email-EU.nkb
+  - repo: local
+    set: [medium-graphs]
+    items:
+    - web-webbase-2001.nkb
+    - arxiv-astro-ph.nkb
+    - as-caida20071105.nkb
+    - cit-HepTh.nkb
+    - ia-email-EU.nkb
   - repo: local
     set: [large-graphs]
     items: 
@@ -120,11 +147,13 @@ matrix:
     - experiments: ['stGreedy', 'exhaustive-search']
       instsets: ['configuration-exp-exhaustive-search']
       axes: ['k-size']
+      revisions: [k-grip]
 
     # performance of simplStoch for different accuracy values
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
+      revisions: [k-grip]
     
     # determine quality of the gain approx (eq 15) for specStoch
     # todo?
@@ -138,29 +167,45 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size']
+      revisions: [k-grip]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
       variants: ['eps_0.9']
+      revisions: [k-grip]
 
     - experiments: ['colStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg']
       variants: ['eps_0.9', 'dense-lu']
+      revisions: [k-grip]
 
     - experiments: ['simplStochJLT']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
+      revisions: [k-grip]
 
     - experiments: ['colStochJLT']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic']
       variants: ['eps_0.9', 'dense-lu', 'ust-diag']
+      revisions: [k-grip]
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'ne']
       variants: ['ne_50']
+      revisions: [k-grip]
 
     # large graphs: (TODO)
+
+
+    ## new stuff
+
+    # run exhaustive search on some medium graphs
+    - experiments: ['exhaustive-search']
+      instsets: ['additional-exhaustive-search']
+      axes: ['k-size']
+      revisions: [k-grip]
+  

@@ -1,6 +1,7 @@
 .vscode
 .venv
 build
+builds
 instances
 aux
 output

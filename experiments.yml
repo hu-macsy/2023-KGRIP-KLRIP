@@ -36,7 +36,7 @@ builds:
     configure:
       - args:
         - 'cmake'
-        - '@THIS_CLONE_DIR@'
+        - '@THIS_SOURCE_DIR@'
         - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
         - '-DCMAKE_BUILD_TYPE=Release'
     compile:
@@ -51,7 +51,7 @@ builds:
 revisions:
   - name: k-grip
     build_version:
-      'graph-robustness-k': 'ed4d1b5cc10dac6d3c3c2c7f7416497cf165e17f'
+      'graph-robustness-k': '13ac360771b7a3e8baf2c5d13a658f156b8002c6'
 
 variants:
   - axis: 'k-size'

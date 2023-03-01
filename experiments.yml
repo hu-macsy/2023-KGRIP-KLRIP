@@ -8,7 +8,7 @@ experiments:
     stdout: out
     use_builds: [graph-robustness-k]
   - name: colStoch
-    args: ['./build/robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@'] # hier war --lamg drin. aber das passt nicht zum paper. also rausgenommen (und es ist ja auch ein variant)
+    args: ['./build/robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ] # hier war --lamg drin. aber das passt nicht zum paper. also rausgenommen (und es ist ja auch ein variant)
     stdout: out
     use_builds: [graph-robustness-k]
   - name: simplStochJLT
@@ -16,7 +16,7 @@ experiments:
     stdout: out
     use_builds: [graph-robustness-k]
   - name: colStochJLT
-    args: ['./build/robustness', '-a6', '-i', '@INSTANCE@', '@EXTRA_ARGS@', '-v']
+    args: ['./build/robustness', '-a6', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     #slurm_args: ['--partition=single', '--nodelist=ego']
@@ -37,6 +37,7 @@ builds:
       - args:
         - 'cmake'
         - '@THIS_CLONE_DIR@'
+        - '-DCMAKE_BUILD_TYPE=Release'
     compile:
       - args:
         - 'make'
@@ -99,15 +100,15 @@ variants:
       - name: 'similarity'
         extra_args: ['-h2']
 
-
         
+# instdir: "/work/global/robustness_graphs"
 instdir: "instances"
 instances:
   - repo: local
     set: [medium-graphs, additional-exhaustive-search]
     items: 
       - inf-power.nkb
-      - facebook_ego_combined.nkb
+      - facebook_ego_combined
       - web-spam.nkb
       - wiki-Vote.nkb
       - p2p-Gnutella09.nkb
@@ -128,9 +129,9 @@ instances:
       - loc-brightkite_edges.nkb
       - soc-Slashdot0902.nkb
       - ia-wiki-Talk.nkb
-      - soc-LiveMocha.nkb
+      - livemocha.nkb
       - road-usroads.nkb
-      # MISSING: flickr
+      - flickrEdges.nkb
   - repo: local
     set: [configuration-exp-exhaustive-search]
     items:

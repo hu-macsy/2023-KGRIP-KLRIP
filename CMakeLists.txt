@@ -15,6 +15,30 @@ include_directories(eigen)
 find_package(OpenMP)
 add_subdirectory(networkit)
 
+
+## this allows install to work: the networkit lib will be found now. additionally, handles custom locations for PETSc and SLEPc as well
+
+# use, i.e. don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
+
+
+
 add_executable(robustness main.cpp cpp/greedy.cpp cpp/laplacian.cpp cpp/dynamicLaplacianSolver.cpp cpp/robustnessGreedy.cpp cpp/robustnessUSTGreedy.cpp cpp/slepc_adapter.cpp)
 
 target_compile_options(robustness PUBLIC -g -O3 -fno-omit-frame-pointer)

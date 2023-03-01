@@ -1,52 +1,57 @@
 experiments:
   - name: stGreedy
-    args: ['./build/robustness', '-a1', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a1', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
   - name: simplStoch
-    args: ['./build/robustness', '-a2', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a2', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
   - name: colStoch
-    args: ['./build/robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ] # hier war --lamg drin. aber das passt nicht zum paper. also rausgenommen (und es ist ja auch ein variant)
+    args: ['robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ] # hier war --lamg drin. aber das passt nicht zum paper. also rausgenommen (und es ist ja auch ein variant)
     stdout: out
     use_builds: [graph-robustness-k]
   - name: simplStochJLT
-    args: ['./build/robustness', '-a5', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a5', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
   - name: colStochJLT
-    args: ['./build/robustness', '-a6', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a6', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     #slurm_args: ['--partition=single', '--nodelist=ego']
   - name: specStoch
-    args: ['./build/robustness', '-a7', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a7', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
   - name: exhaustive-search
-    args: ['./build/robustness', '-a8', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
+    args: ['robustness', '-a8', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
 
 builds:
   - name: graph-robustness-k
-    git: https://github.com/predari/graph-robustness-k
+    git: https://gitlab.informatik.hu-berlin.de/berneluk/robustness
     recursive-clone: true
     configure:
       - args:
         - 'cmake'
         - '@THIS_CLONE_DIR@'
+        - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
         - '-DCMAKE_BUILD_TYPE=Release'
     compile:
       - args:
         - 'make'
         - '-j@PARALLELISM@'
+    install:
+      - args:
+        - 'make'
+        - 'install'
 
 revisions:
   - name: k-grip
     build_version:
-      'graph-robustness-k': '8f09202598e3e1b4245ee280ced05c61c8fc22e9'
+      'graph-robustness-k': 'ed4d1b5cc10dac6d3c3c2c7f7416497cf165e17f'
 
 variants:
   - axis: 'k-size'

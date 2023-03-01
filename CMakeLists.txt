@@ -61,3 +61,5 @@ set_target_properties(robustness
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
 )
+
+install(TARGETS robustness DESTINATION bin)

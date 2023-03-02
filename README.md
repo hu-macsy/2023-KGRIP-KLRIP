@@ -47,3 +47,12 @@ Example. Run main algorithm, k=20, ε=0.9, ε_UST = 10, using LAMG, 6 threads.
 For more details see help string
 
     ./robustness --help
+
+
+## Simex Setup on Cluster
+
+* clone repo
+* Change instdir in [experiments.yml](experiments.yml)
+* set env variables: `PETSC_DIR`, `PETSC_ARCH`, `SLEPC_DIR` (currently: /home/berneluk/robustness/... ; todo: change to /opt)
+* set pkg config path: `export PKG_CONFIG_PATH=$SLEPC_DIR/$PETSC_ARCH/lib/pkgconfig:$PETSC_DIR/$PETSC_ARCH/lib/pkgconfig/:$PKG_CONFIG_PATH`
+* `simex b make`

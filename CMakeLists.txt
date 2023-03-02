@@ -17,6 +17,7 @@ add_subdirectory(networkit)
 
 
 ## this allows install to work: the networkit lib will be found now. additionally, handles custom locations for PETSc and SLEPc as well
+## from: https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 
 # use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH FALSE)

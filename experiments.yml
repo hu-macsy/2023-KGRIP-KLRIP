@@ -52,6 +52,9 @@ revisions:
   - name: k-grip
     build_version:
       'graph-robustness-k': '13ac360771b7a3e8baf2c5d13a658f156b8002c6'
+  - name: local-addition
+    build_version:
+      'graph-robustness-k': 'local-edge-addition'
 
 variants:
   - axis: 'k-size'
@@ -153,7 +156,7 @@ matrix:
     - experiments: ['stGreedy', 'exhaustive-search']
       instsets: ['configuration-exp-exhaustive-search']
       axes: ['k-size']
-      revisions: [k-grip]
+      revisions: [k-grip, local-addition]
 
     # performance of simplStoch for different accuracy values
     - experiments: ['simplStoch']
@@ -173,24 +176,24 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size']
-      revisions: [k-grip]
+      revisions: [k-grip, local-addition]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
       variants: ['eps_0.9']
-      revisions: [k-grip]
+      revisions: [k-grip, local-addition]
 
     - experiments: ['colStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg']
       variants: ['eps_0.9', 'dense-lu']
-      revisions: [k-grip]
+      revisions: [k-grip, local-addition]
 
     - experiments: ['simplStochJLT']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
-      revisions: [k-grip]
+      revisions: [k-grip, local-addition]
 
     - experiments: ['colStochJLT']
       instsets: ['medium-graphs']
@@ -200,9 +203,9 @@ matrix:
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
-      axes: ['k-size', 'ne']
-      variants: ['ne_50']
-      revisions: [k-grip]
+      axes: ['k-size', 'ne', 'solver']
+      variants: ['ne_50', 'dense-lu']
+      revisions: [k-grip, local-addition]
 
     # large graphs: (TODO)
 

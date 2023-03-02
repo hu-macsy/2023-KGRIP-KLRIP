@@ -248,7 +248,13 @@ public:
 
     std::cout << "  Results:\n";
     // run greedy once for each node in G
+    // run for 20 nodes each (for testing)
+    int it = 0;
     g.forNodes([&](const NetworKit::node& focus_node){
+      it++;
+      if (it > 20) {
+        return;
+      }
       params->focus_node = focus_node;
       std::cout << "  - Focus Node: " << focus_node << "\n";
       

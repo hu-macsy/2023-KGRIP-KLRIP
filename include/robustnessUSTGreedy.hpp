@@ -45,6 +45,7 @@ public:
 
     this->n = G.numberOfNodes();
     this->k = params.k;
+    this->focus_node = params.focus_node;
     this->epsilon = params.epsilon;
     this->heuristic = params.heuristic;
     this->candidatesize = params.candidatesize;
@@ -89,27 +90,9 @@ public:
   bool isValidSolution() { return this->validSolution; }
 
   count numberOfNodeCandidates() {
-    unsigned int s;
-    // TODO: hardcoded
-    if (this->k > 20) {
-      s = std::ceil((n - std::log(n)) *
-                    std::sqrt(1. / (double)k * std::log(1.0 / epsilon)));
-      if (s < 2) {
-        s = 2;
-      }
-      if (s > (n - std::log(n)) / 2) {
-        s = (n - std::log(n)) / 2;
-      }
-    } else { // DEFAULT OPTION
-      s = std::ceil(n * std::sqrt(1. / (double)k * std::log(1.0 / epsilon)));
-      if (s < 2) {
-        s = 2;
-      }
-      if (s > n) {
-        s = n / 2;
-      }
-    }
-    return s;
+    // std::cout << this->n << ", " << this->G.degree(this->focus_node) << ", " << this->round << ", sum:" << (this->n - this->G.degree(this->focus_node) - this->round) << "\n";
+    // std::cout << std::log(1.0 / epsilon) << "\n";
+    return std::ceil((this->n - this->G.degree(this->focus_node) - this->round) / k * std::log(1.0 / epsilon)) + 1;
   }
 
   void run() {
@@ -134,15 +117,19 @@ public:
     }
 
     for (int r = 0; r < k; r++) {
+      // std::cout << "Round: " << r << "\n";
       double bestGain = -std::numeric_limits<double>::infinity();
       Edge bestEdge;
 
       int it = 0;
 
       do {
+
+        // std::cout << "it: " << it << "\n";
         // Collect nodes set for current round
         std::set<NetworKit::node> nodes;
         unsigned int s = numberOfNodeCandidates();
+        // std::cout << "s: " << s << "\n";
         // if (r == 0) { INFO("Columns in round 1: ", s); }
 
         double min = std::numeric_limits<double>::infinity();
@@ -234,6 +221,7 @@ public:
         solver.computeColumns(nodesVec);
 
         if (always_use_known_columns_as_candidates) {
+          throw std::logic_error("always use known columns is not implemented yet");
           for (auto u : nodesVec) {
             if (knownColumns.count(u) == 0) {
               for (auto v : knownColumns) {
@@ -248,10 +236,10 @@ public:
           }
           nodesVec = std::vector(knownColumns.begin(), knownColumns.end());
           std::cout << nodesVec.size() << "\n";
-        }
+        
 
-        // Determine best edge between nodes from node set
-        if (always_use_known_columns_as_candidates) {
+          // Determine best edge between nodes from node set
+        
           while (true) {
             if (queue.size() == 0) {
               throw std::logic_error("Added zero nodes, error. ");
@@ -271,15 +259,12 @@ public:
         } else {
           for (int i = 0; i < nodesVec.size(); i++) {
             auto u = nodesVec[i];
-            for (int j = 0; j < i; j++) {
-              auto v = nodesVec[j];
-              if (edgeValid(u, v)) {
-                double gain = solver.totalResistanceDifferenceApprox(u, v);
+            if (edgeValid(focus_node, u)) {
+              double gain = solver.totalResistanceDifferenceApprox(focus_node, u);
 
-                if (gain > bestGain) {
-                  bestEdge = Edge(u, v);
-                  bestGain = gain;
-                }
+              if (gain > bestGain) {
+                bestEdge = Edge(focus_node, u);
+                bestGain = gain;
               }
             }
           }
@@ -325,6 +310,7 @@ public:
 private:
   Graph &G;
   std::vector<Edge> results;
+  node focus_node;
 
   int n;
   bool validSolution = false;

@@ -241,116 +241,122 @@ public:
       std::cout << "  Epsilon: " << epsilon << "\n";
     }
 
-    beforeInit = std::chrono::high_resolution_clock::now();
-
-    createGreedy();
-
-    // Run greedy
-
-    greedy->run();
-    auto t = std::chrono::high_resolution_clock::now();
-    auto duration = t - beforeInit;
-
-    // Verify Results
-    if (!greedy->isValidSolution()) {
-      std::cout << algorithmName << " failed!\n";
-      throw std::logic_error(std::string("Algorithm") + algorithmName +
-                             "failed!");
-    }
-
-    edges = greedy->getResultItems();
-    resultResistance = greedy->getResultValue();
-    originalResistance = greedy->getOriginalValue();
-
-    // Output Results
     std::cout << "  Algorithm:  "
               << "'" << algorithmName << "'"
               << "\n";
 
-    if (vv) {
-      std::cout << "  EdgeList: [";
-      g.forEdges([](NetworKit::node u, NetworKit::node v) {
-        std::cout << "(" << u << ", " << v << "), ";
-      });
-      std::cout << "]\n" << std::endl;
-    }
-    std::cout << "  Value:  " << resultResistance << "\n";
-    std::cout << "  Original Value:  " << originalResistance << "\n";
-    std::cout << "  Gain:  " << originalResistance - resultResistance << "\n";
 
-    using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
-    std::cout << "  Time:    "
-              << std::chrono::duration_cast<scnds>(duration).count() << "\n";
+    std::cout << "  Results:\n";
+    // run greedy once for each node in G
+    g.forNodes([&](const NetworKit::node& focus_node){
+      params->focus_node = focus_node;
+      std::cout << "  - Focus Node: " << focus_node << "\n";
+      
+      beforeInit = std::chrono::high_resolution_clock::now();
 
-    if (alg == AlgorithmType::specStoch) {
-      // double referenceResultResistance = greedy->getReferenceResultValue();
-      // double referenceOriginalResistance =
-      // greedy->getReferenceOriginalResistance(); std::cout << "  Reference
-      // Value:  " << referenceResultResistance << "\n"; std::cout << "
-      // Reference Original Value:  " << referenceOriginalResistance << "\n";
-      // std::cout << "  Reference Gain:  " << referenceOriginalResistance -
-      // referenceResultResistance << "\n";
-      double spectralResultResistance = greedy->getSpectralResultValue();
-      double spectralOriginalResistance =
-          greedy->getSpectralOriginalResistance();
-      std::cout << "  Spectral Value:  " << spectralResultResistance << "\n";
-      std::cout << "  Spectral Original Value:  " << spectralOriginalResistance
-                << "\n";
-      std::cout << "  Spectral Gain:  "
-                << spectralOriginalResistance - spectralResultResistance
-                << "\n";
-      std::cout << "  Eigenpairs:  " << (double)(100 * ne) / n << "\n";
-      std::cout << "  ne:  " << ne << "\n";
-      std::cout << "  Max Eigenvalue:  " << greedy->getMaxEigenvalue() << "\n";
-      std::cout << "  Diff2:  " << diff << "\n";
-      std::cout << "  UpdatePerRound:  " << updatePerRound << "\n";
-    }
+      createGreedy();
 
-    if (verbose) {
-      std::cout << "  AddedEdgeList:  [";
-      for (auto e : edges) {
-        std::cout << "(" << e.u << ", " << e.v << "), ";
-      }
-      std::cout << "]\n" << std::endl;
-    }
-    std::cout.flush();
+      // Run greedy
 
-    if (verify_result) {
-      if (edges.size() != k) {
-        std::ostringstream stringStream;
-        stringStream << "Result Error: Output does contains " << edges.size()
-                     << " edges, not k = " << k << " edges!";
-        std::string error_msg = stringStream.str();
-        std::cout << error_msg << "\n";
-        throw std::logic_error(error_msg);
+      greedy->run();
+      auto t = std::chrono::high_resolution_clock::now();
+      auto duration = t - beforeInit;
+
+      // Verify Results
+      if (!greedy->isValidSolution()) {
+        std::cout << algorithmName << " failed!\n";
+        throw std::logic_error(std::string("Algorithm") + algorithmName +
+                              "failed!");
       }
 
-      LamgDynamicLaplacianSolver solver;
-      double gain = originalResistance - resultResistance;
-      double gain_exact = 0.;
-      auto g_ = g;
-      solver.setup(g_, 0.0001, 2);
-      for (auto e : edges) {
-        if (g.hasEdge(e.u, e.v)) {
-          std::cout << "Error: Edge in result is already in original graph!\n";
-          throw std::logic_error(
-              "Error: Edge from result already in original graph!");
+      edges = greedy->getResultItems();
+      resultResistance = greedy->getResultValue();
+      originalResistance = greedy->getOriginalValue();
+
+      // Output Results
+      
+      if (vv) {
+        std::cout << "    EdgeList: [";
+        g.forEdges([](NetworKit::node u, NetworKit::node v) {
+          std::cout << "(" << u << ", " << v << "), ";
+        });
+        std::cout << "]\n" << std::endl;
+      }
+      std::cout << "    Value:  " << resultResistance << "\n";
+      std::cout << "    Original Value:  " << originalResistance << "\n";
+      std::cout << "    Gain:  " << originalResistance - resultResistance << "\n";
+
+      using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
+      std::cout << "    Time:    "
+                << std::chrono::duration_cast<scnds>(duration).count() << "\n";
+
+      if (alg == AlgorithmType::specStoch) {
+        double spectralResultResistance = greedy->getSpectralResultValue();
+        double spectralOriginalResistance =
+            greedy->getSpectralOriginalResistance();
+        std::cout << "    Spectral Value:  " << spectralResultResistance << "\n";
+        std::cout << "    Spectral Original Value:  " << spectralOriginalResistance
+                  << "\n";
+        std::cout << "    Spectral Gain:  "
+                  << spectralOriginalResistance - spectralResultResistance
+                  << "\n";
+        std::cout << "    Eigenpairs:  " << (double)(100 * ne) / n << "\n";
+        std::cout << "    ne:  " << ne << "\n";
+        std::cout << "    Max Eigenvalue:  " << greedy->getMaxEigenvalue() << "\n";
+        std::cout << "    Diff2:  " << diff << "\n";
+        std::cout << "    UpdatePerRound:  " << updatePerRound << "\n";
+      }
+
+      if (verbose) {
+        std::cout << "    AddedEdgeList:  [";
+        for (auto e : edges) {
+          std::cout << "(" << e.u << ", " << e.v << "), ";
+        }
+        std::cout << "]\n" << std::endl;
+      }
+      std::cout.flush();
+
+      if (verify_result) {
+        if (edges.size() != k) {
+          std::ostringstream stringStream;
+          stringStream << "Result Error: Output does contains " << edges.size()
+                      << " edges, not k = " << k << " edges!";
+          std::string error_msg = stringStream.str();
+          std::cout << error_msg << "\n";
+          throw std::logic_error(error_msg);
         }
 
-        gain_exact += solver.totalResistanceDifferenceExact(e.u, e.v);
-        solver.addEdge(e.u, e.v);
-        g_.addEdge(e.u, e.v);
-      }
+        LamgDynamicLaplacianSolver solver;
+        double gain = originalResistance - resultResistance;
+        double gain_exact = 0.;
+        auto g_ = g;
+        solver.setup(g_, 0.0001, 2);
+        for (auto e : edges) {
+          if (g.hasEdge(e.u, e.v)) {
+            std::cout << "Error: Edge in result is already in original graph!\n";
+            throw std::logic_error(
+                "Error: Edge from result already in original graph!");
+          }
+          if (e.u != focus_node && e.v != focus_node) {
+            std::cout << "Error: Edge is not adjacent to the focus node!\n";
+            throw std::logic_error("Error: Edge is not adjacent to the focus node!");
+          }
 
-      if (std::abs((gain - gain_exact) / gain_exact / k) > 0.01) {
-        std::ostringstream stringStream;
-        stringStream << "Error: Gain Test failed. Output: " << gain
-                     << ", exact: " << gain_exact << ".";
-        std::string error_msg = stringStream.str();
-        std::cout << error_msg << "\n";
-        throw std::logic_error(error_msg);
+          gain_exact += solver.totalResistanceDifferenceExact(e.u, e.v);
+          solver.addEdge(e.u, e.v);
+          g_.addEdge(e.u, e.v);
+        }
+
+        if (std::abs((gain - gain_exact) / gain_exact / k) > 0.01) {
+          std::ostringstream stringStream;
+          stringStream << "Error: Gain Test failed. Output: " << gain
+                      << ", exact: " << gain_exact << ".";
+          std::string error_msg = stringStream.str();
+          std::cout << error_msg << "\n";
+          throw std::logic_error(error_msg);
+        }
       }
-    }
+    });
   }
 };
 

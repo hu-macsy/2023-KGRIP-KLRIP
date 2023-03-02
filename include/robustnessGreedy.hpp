@@ -39,18 +39,19 @@ typedef decltype(std::chrono::high_resolution_clock::now()) Time;
 
 class RobustnessExhaustiveSearch : public virtual AbstractOptimizer<Edge> {
 public:
-  RobustnessExhaustiveSearch(GreedyParams params) : g(params.g), k(params.k) {}
+  RobustnessExhaustiveSearch(GreedyParams params) : g(params.g), k(params.k), focus_node(params.focus_node) {}
 
   virtual void run() override {
     std::vector<NetworKit::Edge> es;
     std::vector<double> gain;
     int n = g.numberOfNodes();
-    if (n * (n - 1) / 2 - g.numberOfEdges() < k) {
+    int num_candidates = n - g.degree(focus_node);
+    if (num_candidates < k) {
       throw std::logic_error("Graph does not allow requested number of edges.");
     }
 
-    gain.reserve(n * (n - 1) / 2 - g.numberOfEdges());
-    es.reserve(n * (n - 1) / 2 - g.numberOfEdges());
+    gain.reserve(num_candidates);
+    es.reserve(num_candidates);
 
     this->results.clear();
 
@@ -62,14 +63,12 @@ public:
       es.clear();
       gain.clear();
       g.forNodes([&](const NetworKit::node v) {
-        g.forNodes([&](const NetworKit::node u) {
-          if (u != v && !this->g.hasEdge(u, v) && !this->g.hasEdge(v, u)) {
-            es.push_back(Edge(u, v));
+          if (focus_node != v && !this->g.hasEdge(focus_node, v) && !this->g.hasEdge(v, focus_node)) {
+            es.push_back(Edge(focus_node, v));
             gain.push_back(
                 n * (-1.0) *
-                laplacianPseudoinverseTraceDifference(this->lpinv, u, v));
+                laplacianPseudoinverseTraceDifference(this->lpinv, focus_node, v));
           }
-        });
       });
 
       int bestIndex = std::max_element(gain.begin(), gain.end()) - gain.begin();
@@ -91,6 +90,7 @@ public:
 private:
   Graph &g;
   count k;
+  node focus_node;
   std::vector<NetworKit::Edge> results;
   double originalResistance = 0.;
   double totalValue = 0.;
@@ -103,6 +103,7 @@ public:
     this->g = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
+    this->focus_node = params.focus_node;
 
     // Compute pseudoinverse of laplacian
     Aux::Timer lpinvTimer;
@@ -117,13 +118,11 @@ public:
   virtual void addDefaultItems() {
     // Add edges to items of greedy
     std::vector<Edge> items;
-    for (size_t i = 0; i < this->n; i++) {
-      for (size_t j = 0; j < i; j++) {
-        if (i != j && !this->g.hasEdge(i, j)) {
-          items.push_back(Edge(i, j));
+    g.forNodes([&](const NetworKit::node v) {
+      if (focus_node != v && !this->g.hasEdge(focus_node, v) && !this->g.hasEdge(v, focus_node)) {
+          items.push_back(Edge(focus_node, v));
         }
-      }
-    }
+    });
 
     this->addItems(items);
   }
@@ -154,6 +153,7 @@ private:
   Eigen::MatrixXd lpinv;
 
   double originalResistance = 0.;
+  node focus_node;
 
   Graph g;
   int n;
@@ -165,6 +165,7 @@ public:
 
     this->g = params.g;
     this->n = g.numberOfNodes();
+    this->focus_node = params.focus_node;
     this->k = params.k;
     this->epsilon = params.epsilon;
     gen = std::mt19937(Aux::Random::getSeed());
@@ -216,12 +217,7 @@ public:
       do {
         // Collect nodes set for current round
         std::set<NetworKit::node> nodes;
-        unsigned int s =
-            (unsigned int)std::sqrt(1.0 *
-                                    (this->n * (this->n - 1) / 2 -
-                                     this->g.numberOfEdges() - this->round) /
-                                    k * std::log(1.0 / epsilon)) +
-            2;
+        unsigned int s = (this->n - this->g.degree(this->focus_node) - this->round) / k * std::log(1.0 / epsilon) + 1;
         // if (s > k-round) { s = k - round; }
         if (s < 10) {
           s = 10;
@@ -283,14 +279,11 @@ public:
         };
         for (int i = 0; i < s; i++) {
           auto u = nodesVec[i];
-          for (int j = 0; j < i; j++) {
-            auto v = nodesVec[j];
-            if (edgeValid(u, v)) {
-              double gain = objectiveDifference(Edge(u, v));
-              if (gain > bestGain) {
-                bestEdge = Edge(u, v);
-                bestGain = gain;
-              }
+          if (edgeValid(focus_node, u)) {
+            double gain = objectiveDifference(Edge(focus_node, u));
+            if (gain > bestGain) {
+              bestEdge = Edge(focus_node, u);
+              bestGain = gain;
             }
           }
         }
@@ -319,6 +312,7 @@ private:
   }
 
   Graph g;
+  node focus_node;
   int n;
   Eigen::MatrixXd lpinv;
   std::mt19937 gen;
@@ -339,6 +333,7 @@ public:
     this->g = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
+    this->focus_node = params.focus_node;
     this->epsilon = params.epsilon;
     this->candidatesize = params.candidatesize;
 
@@ -360,14 +355,12 @@ public:
     }
     for (size_t i = 0; i < this->n; i++) {
       count = 0;
-      for (size_t j = 0; j < i; j++) {
-        if (!this->g.hasEdge(i, j)) {
-          items.push_back(Edge(i, j));
+      if (focus_node != i && !this->g.hasEdge(focus_node, i) && !this->g.hasEdge(i, focus_node)) {
+          items.push_back(Edge(focus_node, i));
           count++;
         }
-        if (count > lim) {
-          break;
-        }
+      if (count > lim) {
+        break;
       }
     }
 
@@ -394,6 +387,7 @@ private:
   Eigen::MatrixXd lpinv;
 
   Graph g;
+  node focus_node;
   int n;
   double originalResistance = 0.;
   CandidateSetSize candidatesize;
@@ -406,6 +400,7 @@ public:
   ColStoch(GreedyParams params) {
     this->g = params.g;
     this->n = g.numberOfNodes();
+    this->focus_node = params.focus_node;
     this->k = params.k;
     this->epsilon = params.epsilon;
 
@@ -425,13 +420,12 @@ public:
   virtual void addDefaultItems() override {
     // Add edges to items of greedy
     std::vector<Edge> items;
-    for (size_t i = 0; i < this->n; i++) {
-      for (size_t j = 0; j < i; j++) {
-        if (!this->g.hasEdge(i, j)) {
-          items.push_back(Edge(i, j));
+    g.forNodes([&](const NetworKit::node v) {
+      if (focus_node != v && !this->g.hasEdge(focus_node, v) && !this->g.hasEdge(v, focus_node)) {
+          items.push_back(Edge(focus_node, v));
         }
-      }
-    }
+    });
+
     this->addItems(items);
   }
 
@@ -525,7 +519,7 @@ public:
       }
       if (candidatesLeft) {
         this->results.push_back(c.item);
-        this->totalValue += this->objectiveDifferenceExact(c.item);
+        this->totalValue += this->objectiveDifferenceExact(c.item); // this line is the only one changed compared to the superclass::run fn
         this->useItem(c.item);
         this->items[c.index].selected = true;
 
@@ -552,6 +546,7 @@ private:
 
   DynamicLaplacianSolver solver;
   Graph g;
+  node focus_node;
   int n;
   double originalResistance = 0.;
 };
@@ -562,6 +557,7 @@ public:
   SpecStoch(GreedyParams params) {
     this->g = params.g;
     this->n = g.numberOfNodes();
+    this->focus_node = params.focus_node;
     this->k = params.k;
     this->epsilon = params.epsilon;
     this->ne = params.ne;
@@ -589,13 +585,11 @@ public:
   virtual void addDefaultItems() override {
     // Add edges to items of greedy
     std::vector<Edge> items;
-    for (size_t i = 0; i < this->n; i++) {
-      for (size_t j = 0; j < i; j++) {
-        if (!this->g.hasEdge(i, j)) {
-          items.push_back(Edge(i, j));
+    g.forNodes([&](const NetworKit::node v) {
+      if (focus_node != v && !this->g.hasEdge(focus_node, v) && !this->g.hasEdge(v, focus_node)) {
+          items.push_back(Edge(focus_node, v));
         }
-      }
-    }
+    });
 
     this->addItems(items);
   }
@@ -753,6 +747,7 @@ private:
   void updateEigenpairs() { solver.update_eigensolver(); }
 
   Graph g;
+  node focus_node;
   int n;
   double originalResistance = 0.;
   SlepcAdapter solver;

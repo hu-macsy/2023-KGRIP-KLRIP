@@ -28,6 +28,8 @@ public:
   CandidateSetSize candidatesize;
   NetworKit::count similarityIterations = 100;
   bool always_use_known_columns_as_candidates = false;
+
+  NetworKit::node focus_node; // for local optimization: optimize this node
 };
 
 #endif

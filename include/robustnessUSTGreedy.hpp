@@ -39,9 +39,9 @@ inline bool operator<(const QueueItem &left, const QueueItem &right) {
 
 template <class DynamicLaplacianSolver = LamgDynamicLaplacianSolver>
 // using DynamicLaplacianSolver = LeastSquaresDynamicLaplacianSolver;
-class ColStochJLT final : public AbstractOptimizer<NetworKit::Edge> {
+class ColStoch final : public AbstractOptimizer<NetworKit::Edge> {
 public:
-  ColStochJLT(GreedyParams params) : G(params.g) {
+  ColStoch(GreedyParams params) : G(params.g) {
 
     this->n = G.numberOfNodes();
     this->k = params.k;

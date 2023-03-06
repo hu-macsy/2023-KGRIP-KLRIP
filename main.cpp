@@ -61,9 +61,8 @@ enum class AlgorithmType {
   simplStoch,
   specStoch,
   exhaustive,
+  simplStochDyn,
   colStoch,
-  colStochJLT,
-  simplStochJLT
 };
 
 class RobustnessExperiment {
@@ -108,15 +107,12 @@ public:
     } else if (alg == AlgorithmType::simplStoch) {
       algorithmName = "simplStoch";
       createSpecific<SimplStoch>();
-    } else if (alg == AlgorithmType::simplStochJLT) {
-      algorithmName = "simplStochJLT";
-      createSpecific<SimplStochJLT>();
-    } else if (alg == AlgorithmType::colStochJLT) {
-      algorithmName = "colStochJLT";
-      createLinAlgGreedy<ColStochJLT>();
     } else if (alg == AlgorithmType::colStoch) {
       algorithmName = "colStoch";
       createLinAlgGreedy<ColStoch>();
+    } else if (alg == AlgorithmType::simplStochDyn) {
+      algorithmName = "simplStochDyn";
+      createLinAlgGreedy<simplStochDyn>();
     } else if (alg == AlgorithmType::specStoch) {
       algorithmName = "specStoch";
       createLinAlgGreedy<SpecStoch>();
@@ -199,7 +195,7 @@ public:
       std::cout << "False\n";
     }
 
-    if (alg == AlgorithmType::colStochJLT || alg == AlgorithmType::colStoch ||
+    if (alg == AlgorithmType::colStoch || alg == AlgorithmType::simplStochDyn ||
         alg == AlgorithmType::specStoch) {
       std::string linalgName = "";
       if (linalg == LinAlgType::lamg) {
@@ -219,7 +215,7 @@ public:
       }
     }
 
-    if (alg == AlgorithmType::colStochJLT) {
+    if (alg == AlgorithmType::colStoch) {
       std::string heuristicName;
       if (heuristic == HeuristicType::lpinvDiag) {
         heuristicName = "Lpinv Diagonal";
@@ -235,9 +231,8 @@ public:
       std::cout << "  Epsilon2: " << epsilon2 << "\n";
     }
 
-    if (alg == AlgorithmType::simplStochJLT ||
-        alg == AlgorithmType::simplStoch || alg == AlgorithmType::colStoch ||
-        alg == AlgorithmType::colStochJLT || alg == AlgorithmType::specStoch) {
+    if (alg == AlgorithmType::simplStoch || alg == AlgorithmType::simplStochDyn ||
+        alg == AlgorithmType::colStoch || alg == AlgorithmType::specStoch) {
       std::cout << "  Epsilon: " << epsilon << "\n";
     }
 
@@ -585,15 +580,11 @@ int main(int argc, char *argv[]) {
         continue;
       }
       if (arg == "-a3") {
-        experiment.alg = AlgorithmType::colStoch;
-        continue;
-      }
-      if (arg == "-a5") {
-        experiment.alg = AlgorithmType::simplStochJLT;
+        experiment.alg = AlgorithmType::simplStochDyn;
         continue;
       }
       if (arg == "-a6") {
-        experiment.alg = AlgorithmType::colStochJLT;
+        experiment.alg = AlgorithmType::colStoch;
         continue;
       }
       if (arg == "-a7") {

@@ -103,3 +103,5 @@ void JLTSolver<MatrixType, DynamicSolver>::computeIntermediateMatrices() {
   PL.transposeInPlace();
   PBL.transposeInPlace();
 }
+
+template class JLTSolver<Eigen::SparseMatrix<double>, SparseLUSolver>;

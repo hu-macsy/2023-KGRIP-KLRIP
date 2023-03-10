@@ -48,7 +48,7 @@ protected:
   count solverAge = 0;
 };
 
-template class DynamicLaplacianSolver<
+extern template class DynamicLaplacianSolver<
     Eigen::SparseMatrix<double>,
     Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>>;
 

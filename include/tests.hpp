@@ -41,7 +41,6 @@
 #include <networkit/auxiliary/Log.hpp>
 #include <slepceps.h>
 
-#include <dynamicLaplacianSolver.hpp>
 #include <greedy.hpp>
 #include <laplacian.hpp>
 #include <robustnessGreedy.hpp>

@@ -42,7 +42,7 @@ private:
   Eigen::SparseMatrix<double> incidence;
 };
 
-template class JLTSolver<Eigen::SparseMatrix<double>, SparseLUSolver>;
+extern template class JLTSolver<Eigen::SparseMatrix<double>, SparseLUSolver>;
 typedef JLTSolver<Eigen::SparseMatrix<double>, SparseLUSolver> JLTLUSolver;
 
 #endif

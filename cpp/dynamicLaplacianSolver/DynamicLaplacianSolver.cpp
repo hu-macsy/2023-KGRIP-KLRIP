@@ -143,3 +143,7 @@ DynamicLaplacianSolver<MatrixType, Solver>::totalResistanceDifferenceExact(
     node u, node v) {
   return totalResistanceDifferenceApprox(u, v);
 }
+
+template class DynamicLaplacianSolver<
+    Eigen::SparseMatrix<double>,
+    Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>>;

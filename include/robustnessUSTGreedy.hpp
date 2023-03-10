@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include <dynamicLaplacianSolver.hpp>
+#include <dynamicLaplacianSolver/LamgDynamicLaplacianSolver.hpp>
 #include <greedy.hpp>
 #include <greedy_params.hpp>
 #include <laplacian.hpp>

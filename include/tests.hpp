@@ -574,6 +574,13 @@ void testSolverSetupTime(const Graph& g) {
     
     std::cout << "LU JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
 
+    auto beforeAPX = std::chrono::high_resolution_clock::now();
+    auto apx = std::make_unique<ApproxElectricalCloseness>(g, 10);
+    apx->run();
+    auto diag = apx->getDiagonal();
+    auto afterAPX = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "ApproxElectricalCloseness init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterAPX - beforeAPX).count() << "\n";
 
 
 

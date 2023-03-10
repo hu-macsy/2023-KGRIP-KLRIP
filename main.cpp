@@ -89,6 +89,8 @@ public:
   HeuristicType heuristic;
   CandidateSetSize candidatesize;
   bool always_use_known_columns_as_candidates = false;
+  unsigned int num_focus_nodes = 1;
+  int focus_node_seed;
 
   std::vector<NetworKit::Edge> edges;
   double resultResistance;
@@ -186,6 +188,8 @@ public:
       std::cout << "small\n";
     } else if (candidatesize == CandidateSetSize::large) {
       std::cout << "large\n";
+    } else {
+      std::cout << "unknown\n";
     }
     std::cout << "  SolverEpsilon:  " << params->solverEpsilon << "\n";
     std::cout << "  All-Columns: ";
@@ -236,32 +240,39 @@ public:
       std::cout << "  Epsilon: " << epsilon << "\n";
     }
 
+    // run for num_focus_nodes. pick at random.
+    std::mt19937 gen(focus_node_seed);
+    
+    std::vector<node> all_nodes, focus_nodes;
+    all_nodes.reserve(g.numberOfNodes());
+    focus_nodes.reserve(num_focus_nodes);
+    g.forNodes([&](node u) { all_nodes.push_back(u); });
+    std::sample(all_nodes.begin(), all_nodes.end(), std::back_inserter(focus_nodes), num_focus_nodes, gen);
+
+    // initialize once, then run for each focus node
+    beforeInit = std::chrono::high_resolution_clock::now();
+    createGreedy();
+    auto afterInit = std::chrono::high_resolution_clock::now();
     std::cout << "  Algorithm:  "
               << "'" << algorithmName << "'"
               << "\n";
 
+    using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
+    std::cout << "  InitTime:    "
+              << std::chrono::duration_cast<scnds>(afterInit - beforeInit).count() << "\n";
 
     std::cout << "  Results:\n";
-    // run greedy once for each node in G
-    // run for 20 nodes each (for testing)
-    int it = 0;
-    g.forNodes([&](const NetworKit::node& focus_node){
-      it++;
-      if (it > 20) {
-        return;
-      }
-      params->focus_node = focus_node;
+
+    for (node focus_node : focus_nodes){
       std::cout << "  - Focus Node: " << focus_node << "\n";
       
-      beforeInit = std::chrono::high_resolution_clock::now();
-
-      createGreedy();
-
       // Run greedy
-
+      
+      auto beforeRun = std::chrono::high_resolution_clock::now();
+      greedy->reset_focus(focus_node);
       greedy->run();
       auto t = std::chrono::high_resolution_clock::now();
-      auto duration = t - beforeInit;
+      auto duration = t - beforeRun;
 
       // Verify Results
       if (!greedy->isValidSolution()) {
@@ -308,13 +319,11 @@ public:
         std::cout << "    UpdatePerRound:  " << updatePerRound << "\n";
       }
 
-      if (verbose) {
-        std::cout << "    AddedEdgeList:  [";
-        for (auto e : edges) {
-          std::cout << "(" << e.u << ", " << e.v << "), ";
-        }
-        std::cout << "]\n" << std::endl;
+      std::cout << "    AddedEdgeList:  [";
+      for (auto e : edges) {
+        std::cout << "(" << e.u << ", " << e.v << "), ";
       }
+      std::cout << "]\n" << std::endl;
       std::cout.flush();
 
       if (verify_result) {
@@ -357,7 +366,7 @@ public:
           throw std::logic_error(error_msg);
         }
       }
-    });
+    };
   }
 };
 
@@ -443,6 +452,7 @@ int main(int argc, char *argv[]) {
         "\t-ur\t\tNumber of rounds to update eigenpairs. \n"
         "\t-diff2\t\tSelect one of diff evaluation for spectral approach "
         "{0,1,2}. \n"
+        "\t-nfocus<n>\tNumber of focus nodes to calculate"
         "\t--loglevel\t\tActivate loging. Levels: TRACE, DEBUG, INFO, WARN, "
         "ERROR, FATAL.\n"
         "\n";
@@ -559,6 +569,16 @@ int main(int argc, char *argv[]) {
       if (arg == "-diff" || arg == "--diff") {
         auto arg_diff = nextArg(i);
         experiment.diff = atoi(arg_diff);
+        continue;
+      }
+
+      if (arg == "--nfocus" | arg == "-nf") {
+        experiment.num_focus_nodes = std::stoi(nextArg(i));
+        continue;
+      }
+
+      if (arg == "--focus-seed") {
+        experiment.focus_node_seed = std::stoi(nextArg(i));
         continue;
       }
 
@@ -758,7 +778,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (run_tests) {
-      testRobustnessStochasticGreedySpectral();
+      // testRobustnessStochasticGreedySpectral();
+      testSolverSetupTime(g);
       // testDynamicColumnApprox();
       // testRobustnessSubmodularGreedy();
     }

@@ -42,11 +42,13 @@ template <class DynamicLaplacianSolver = LamgDynamicLaplacianSolver>
 class ColStoch final : public AbstractOptimizer<NetworKit::Edge> {
 public:
   ColStoch(GreedyParams params) : G(params.g) {
-
+    this->originalG = params.g;
     this->n = G.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
     this->epsilon = params.epsilon;
+    this->epsilon2 = params.epsilon2;
+    this->solverEpsilon = params.solverEpsilon;
     this->heuristic = params.heuristic;
     this->candidatesize = params.candidatesize;
     this->round = 0;
@@ -56,7 +58,6 @@ public:
     else
       solver.setup(G, params.solverEpsilon,
                    std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
-
     this->totalValue = 0.;
     this->originalResistance = 0.;
     this->always_use_known_columns_as_candidates =
@@ -79,6 +80,38 @@ public:
       totalValue = 0.;
       // pass
     }
+  }
+
+  virtual void reset_focus(const node& fn) override {
+    this->G = this->originalG;
+    this->focus_node = fn;
+    this->round = 0;
+    
+    solver.~DynamicLaplacianSolver();
+    new (&solver) DynamicLaplacianSolver();
+    if (this->k > 20)
+      solver.setup(G, this->solverEpsilon, numberOfNodeCandidates());
+    else
+      solver.setup(G, this->solverEpsilon,
+                   std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+
+    this->totalValue = 0.;
+    this->originalResistance = 0.;
+
+    gen = std::mt19937(Aux::Random::getSeed());
+
+    if (heuristic == HeuristicType::lpinvDiag) {
+      this->apx = std::make_unique<ApproxElectricalCloseness>(G,
+                                                        this->epsilon2);
+      apx->run();
+      this->diag = apx->getDiagonal();
+       G.forNodes([&](node u) {
+        this->totalValue -= static_cast<double>(this->n) * this->diag[u];
+      });
+      originalResistance = -1. * totalValue;
+    }
+
+    this->hasRun = false;
   }
 
   double getResultValue() { return this->totalValue * (-1.0); }
@@ -308,7 +341,8 @@ public:
   }
 
 private:
-  Graph &G;
+  Graph G;
+  Graph originalG;
   std::vector<Edge> results;
   node focus_node;
 
@@ -319,6 +353,8 @@ private:
 
   double totalValue = 0.0;
   double epsilon = 0.1;
+  double epsilon2;
+  double solverEpsilon;
   double originalResistance = 0.;
 
   count similarityIterations = 100;

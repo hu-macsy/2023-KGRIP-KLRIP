@@ -23,6 +23,7 @@
 
 template <class T> class AbstractOptimizer : public NetworKit::Algorithm {
 public:
+  virtual void reset_focus(const NetworKit::node& focus_node) = 0;
   virtual double getResultValue() = 0;
   virtual double getOriginalValue() = 0;
   virtual std::vector<T> getResultItems() = 0;

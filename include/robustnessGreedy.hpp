@@ -40,6 +40,10 @@ typedef decltype(std::chrono::high_resolution_clock::now()) Time;
 class RobustnessExhaustiveSearch : public virtual AbstractOptimizer<Edge> {
 public:
   RobustnessExhaustiveSearch(GreedyParams params) : g(params.g), k(params.k), focus_node(params.focus_node) {}
+   virtual void reset_focus(const node& fn) override {
+    this->focus_node = fn;
+    this->hasRun = false;
+  }
 
   virtual void run() override {
     std::vector<NetworKit::Edge> es;
@@ -101,6 +105,7 @@ class StGreedy final : public SubmodularGreedy<Edge> {
 public:
   StGreedy(GreedyParams params) {
     this->g = params.g;
+    this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -110,6 +115,18 @@ public:
     lpinvTimer.start();
     this->lpinv = laplacianPseudoinverse(g);
     lpinvTimer.stop();
+    this->originalLpinv = this->lpinv;
+
+    this->totalValue = this->lpinv.trace() * n * (-1.0);
+    this->originalResistance = this->totalValue * (-1.);
+  }
+
+  virtual void reset_focus(const node& fn) override {
+    this->g = this->originalG;
+    this->focus_node = fn;
+    this->lpinv = this->originalLpinv;
+    this->resetItems();
+    this->hasRun = false;
 
     this->totalValue = this->lpinv.trace() * n * (-1.0);
     this->originalResistance = this->totalValue * (-1.);
@@ -151,11 +168,14 @@ private:
   }
 
   Eigen::MatrixXd lpinv;
+  Eigen::MatrixXd originalLpinv;
+  
 
   double originalResistance = 0.;
   node focus_node;
 
   Graph g;
+  Graph originalG;
   int n;
 };
 
@@ -164,6 +184,7 @@ public:
   SimplStoch(GreedyParams params) {
 
     this->g = params.g;
+    this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -171,6 +192,18 @@ public:
     this->candidatesize = params.candidatesize;
 
     this->lpinv = laplacianPseudoinverse(g);
+    this->originalLpinv = this->lpinv;
+    this->totalValue = this->lpinv.trace() * n * (-1.0);
+    this->originalResistance = -1. * this->totalValue;
+  }
+
+  virtual void reset_focus(const node& fn) override {
+    this->g = this->originalG;
+    this->focus_node = fn;
+    this->lpinv = this->originalLpinv;
+    this->resetItems();
+    this->hasRun = false;
+
     this->totalValue = this->lpinv.trace() * n * (-1.0);
     this->originalResistance = -1. * this->totalValue;
   }
@@ -218,8 +251,10 @@ private:
   }
 
   Eigen::MatrixXd lpinv;
+  Eigen::MatrixXd originalLpinv;
 
   Graph g;
+  Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
@@ -231,15 +266,15 @@ class simplStochDyn : public StochasticGreedy<Edge> {
 public:
   simplStochDyn(GreedyParams params) {
     this->g = params.g;
+    this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->focus_node = params.focus_node;
     this->k = params.k;
     this->epsilon = params.epsilon;
+    this->solverEpsilon = params.solverEpsilon;
 
     this->totalValue = 0.;
     this->originalResistance = 0.;
-    // solver.setup(g, 1.0e-6, std::ceil(n * std::sqrt(1. / (double)(k) *
-    // std::log(1.0/epsilon))));
     if (this->k > 20)
       solver.setup(
           g, params.solverEpsilon,
@@ -247,6 +282,26 @@ public:
     else
       solver.setup(g, params.solverEpsilon,
                    std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+  }
+
+  virtual void reset_focus(const node& fn) override {
+    this->g = this->originalG;
+    this->focus_node = fn;
+
+    solver.~DynamicLaplacianSolver();
+    new (&solver) DynamicLaplacianSolver();
+    if (this->k > 20)
+      solver.setup(
+          g, this->solverEpsilon,
+          std::ceil(n * std::sqrt(1. / (double)(k)*std::log(1.0 / epsilon))));
+    else
+      solver.setup(g, this->solverEpsilon,
+                   std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+
+    this->resetItems();
+    this->hasRun = false;
+    this->totalValue = 0.;
+    this->originalResistance = 0.;
   }
 
   virtual void addDefaultItems() override {
@@ -378,9 +433,11 @@ private:
 
   DynamicLaplacianSolver solver;
   Graph g;
+  Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
+  double solverEpsilon;
 };
 
 template <class DynamicLaplacianSolver>
@@ -388,10 +445,12 @@ class SpecStoch : public StochasticGreedy<Edge> {
 public:
   SpecStoch(GreedyParams params) {
     this->g = params.g;
+    this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->focus_node = params.focus_node;
     this->k = params.k;
     this->epsilon = params.epsilon;
+    this->solverEpsilon = params.solverEpsilon;
     this->ne = params.ne;
     this->updatePerRound = params.updatePerRound;
     this->diff = params.diff;
@@ -408,6 +467,34 @@ public:
     solver.setup(g, this->k, ne);
 
     solver.run_eigensolver();
+
+    this->totalValue = 0.;
+    this->originalResistance = totalValue;
+    this->SpectralOriginalResistance =
+        solver.SpectralToTalEffectiveResistance();
+  }
+
+  virtual void reset_focus(const node& fn) override {
+    this->g = this->originalG;
+    this->focus_node = fn;
+
+    solver.~SlepcAdapter();
+    new (&solver) SlepcAdapter();
+    solver.setup(g, this->k, ne);
+    solver.run_eigensolver();
+
+    lap_solver.~DynamicLaplacianSolver();
+    new (&lap_solver) DynamicLaplacianSolver();
+    if (this->k > 20)
+      lap_solver.setup(
+          g, this->solverEpsilon,
+          std::ceil(n * std::sqrt(1. / (double)(k)*std::log(1.0 / epsilon))));
+    else
+      lap_solver.setup(g, this->solverEpsilon,
+                       std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+    this->resetItems();
+    this->hasRun = false;
+
     this->totalValue = 0.;
     this->originalResistance = totalValue;
     this->SpectralOriginalResistance =
@@ -579,6 +666,7 @@ private:
   void updateEigenpairs() { solver.update_eigensolver(); }
 
   Graph g;
+  Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
@@ -595,6 +683,7 @@ private:
   double SpectralOriginalResistance = 0.0;
   //
   DynamicLaplacianSolver lap_solver;
+  double solverEpsilon;
 };
 
 #endif // ROBUSTNESS_GREEDY_H

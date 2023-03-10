@@ -206,7 +206,7 @@ matrix:
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'similarity', 'ust-diag']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag']
       revisions: [k-grip]
 
     - experiments: ['specStoch']
@@ -247,7 +247,7 @@ matrix:
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'similarity', 'ust-diag']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag']
       revisions: [local-addition]
 
     - experiments: ['specStoch']

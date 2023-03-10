@@ -534,4 +534,49 @@ void testJLT(NetworKit::Graph g, std::string instanceFile, int k) {
   std::cout << "] \n";
 }
 
+void testSolverSetupTime(const Graph& g) {
+    using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
+
+    auto beforeSlepcAdapter = std::chrono::high_resolution_clock::now();
+    SlepcAdapter slepc_adapter;
+    slepc_adapter.setup(g, 100, 100);
+    slepc_adapter.run_eigensolver();
+    auto afterSlepcAdapter = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "SlepcAdapter init with k=100, ne=100: " << std::chrono::duration_cast<scnds>(afterSlepcAdapter - beforeSlepcAdapter).count() << "\n";
+
+
+    auto beforeLamg = std::chrono::high_resolution_clock::now();
+    LamgDynamicLaplacianSolver lamgsolver;
+    lamgsolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
+    auto afterLamg = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Lamg init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+
+    auto beforeLU = std::chrono::high_resolution_clock::now();
+    SparseLUSolver lusolver;
+    lusolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
+    auto afterLU = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "LU init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+
+    auto beforeJLTLamg = std::chrono::high_resolution_clock::now();
+    JLTLamgSolver jltlamgsolver;
+    jltlamgsolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
+    auto afterJLTLamg = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Lamg JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+
+    auto beforeJLTLU = std::chrono::high_resolution_clock::now();
+    JLTLUSolver jltlusolver;
+    jltlusolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
+    auto afterJLTLU = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "LU JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+
+
+
+
+}
+
 #endif

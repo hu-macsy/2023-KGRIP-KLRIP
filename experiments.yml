@@ -107,6 +107,14 @@ variants:
         extra_args: ['-h1']
       - name: 'similarity'
         extra_args: ['-h2']
+  - axis: 'num-focus-nodes'
+    items:
+      - name: 'focus-100'
+        extra_args: ['-nf', '100']
+  - axis: 'focus-seed'
+    items:
+      - name: 'fseed1'
+        extra_args: ['--focus-seed', '1']
 
         
 instdir: "/work/global/robustness_graphs"
@@ -167,6 +175,7 @@ matrix:
       instsets: ['large-graphs']
       axes: ['k-size', 'accuracy']
       variants: ['k-2','k-20','eps_0.99']
+      revisions: [k-grip]
     
     # determine quality of the gain approx (eq 15) for specStoch
     # todo?
@@ -180,31 +189,31 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size']
-      revisions: [k-grip, local-addition]
+      revisions: [k-grip]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy']
       variants: ['eps_0.9']
-      revisions: [k-grip, local-addition]
+      revisions: [k-grip]
       
     - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg']
       variants: ['eps_0.9', 'jlt-lu']
-      revisions: [k-grip, local-addition]
+      revisions: [k-grip]
 
-    - experiments: ['colStoch']
+    - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic']
       variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'similarity', 'ust-diag']
-      revisions: [k-grip, local-addition]
+      revisions: [k-grip]
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'ne', 'solver']
       variants: ['ne_50', 'dense-lu']
-      revisions: [k-grip, local-addition]
+      revisions: [k-grip]
 
     # large graphs: (TODO)
 
@@ -216,6 +225,36 @@ matrix:
       instsets: ['additional-exhaustive-search']
       axes: ['k-size']
       revisions: [k-grip]
+
+    # local addition with medium graphs:
+    - experiments: ['stGreedy']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'num-focus-nodes', 'focus-seed']
+      revisions: [local-addition]
+
+    - experiments: ['simplStoch']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9']
+      revisions: [local-addition]
+      
+    - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9', 'jlt-lu']
+      revisions: [local-addition]
+
+    - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'similarity', 'ust-diag']
+      revisions: [local-addition]
+
+    - experiments: ['specStoch']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'ne', 'solver', 'num-focus-nodes', 'focus-seed']
+      variants: ['ne_50', 'dense-lu']
+      revisions: [local-addition]
   
 
 

@@ -211,7 +211,7 @@ matrix:
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
-      axes: ['k-size', 'ne', 'solver']
+      axes: ['k-size', 'ne', 'linalg']
       variants: ['ne_50', 'dense-lu']
       revisions: [k-grip]
 
@@ -252,7 +252,7 @@ matrix:
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
-      axes: ['k-size', 'ne', 'solver', 'num-focus-nodes', 'focus-seed']
+      axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['ne_50', 'dense-lu']
       revisions: [local-addition]
   

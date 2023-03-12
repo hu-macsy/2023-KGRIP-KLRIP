@@ -105,7 +105,7 @@ class StGreedy final : public SubmodularGreedy<Edge> {
 public:
   StGreedy(GreedyParams params) {
     this->g = params.g;
-    this->originalG = params.g;
+    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -122,7 +122,9 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    this->g = this->originalG;
+    // this->g = this->originalG;
+    for (auto edge : this->results)
+      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -175,7 +177,7 @@ private:
   node focus_node;
 
   Graph g;
-  Graph originalG;
+  // Graph originalG;
   int n;
 };
 
@@ -184,7 +186,7 @@ public:
   SimplStoch(GreedyParams params) {
 
     this->g = params.g;
-    this->originalG = params.g;
+    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -198,7 +200,9 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    this->g = this->originalG;
+    // this->g = this->originalG;
+    for (auto edge : this->results)
+      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -254,7 +258,7 @@ private:
   Eigen::MatrixXd originalLpinv;
 
   Graph g;
-  Graph originalG;
+  // Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
@@ -266,7 +270,7 @@ class simplStochDyn : public StochasticGreedy<Edge> {
 public:
   simplStochDyn(GreedyParams params) {
     this->g = params.g;
-    this->originalG = params.g;
+    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->focus_node = params.focus_node;
     this->k = params.k;
@@ -285,7 +289,9 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    this->g = this->originalG;
+    // this->g = this->originalG;
+    for (auto edge : this->results)
+      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
 
     solver.~DynamicLaplacianSolver();
@@ -445,7 +451,7 @@ class SpecStoch : public StochasticGreedy<Edge> {
 public:
   SpecStoch(GreedyParams params) {
     this->g = params.g;
-    this->originalG = params.g;
+    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->focus_node = params.focus_node;
     this->k = params.k;
@@ -475,7 +481,9 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    this->g = this->originalG;
+    // this->g = this->originalG;
+    for (auto edge : this->results)
+      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
 
     solver.~SlepcAdapter();
@@ -666,7 +674,7 @@ private:
   void updateEigenpairs() { solver.update_eigensolver(); }
 
   Graph g;
-  Graph originalG;
+  // Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;

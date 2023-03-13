@@ -123,8 +123,6 @@ public:
 
   virtual void reset_focus(const node& fn) override {
     // this->g = this->originalG;
-    for (auto edge : this->results)
-      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -201,8 +199,6 @@ public:
 
   virtual void reset_focus(const node& fn) override {
     // this->g = this->originalG;
-    for (auto edge : this->results)
-      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -290,8 +286,6 @@ public:
 
   virtual void reset_focus(const node& fn) override {
     // this->g = this->originalG;
-    for (auto edge : this->results)
-      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
 
     solver.~DynamicLaplacianSolver();
@@ -482,8 +476,6 @@ public:
 
   virtual void reset_focus(const node& fn) override {
     // this->g = this->originalG;
-    for (auto edge : this->results)
-      this->g.removeEdge(edge.u, edge.v);
     this->focus_node = fn;
 
     solver.~SlepcAdapter();

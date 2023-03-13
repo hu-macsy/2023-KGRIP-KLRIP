@@ -55,6 +55,9 @@ revisions:
   - name: local-addition
     build_version:
       'graph-robustness-k': 'local-edge-addition'
+  - name: local-opt-fel
+    build_version:
+      'graph-robustness-k': 'local-addition-opt-fel'
 
 variants:
   - axis: 'k-size'
@@ -230,25 +233,25 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size', 'num-focus-nodes', 'focus-seed']
-      revisions: [local-addition]
+      revisions: [local-addition, local-opt-fel]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9']
-      revisions: [local-addition]
+      revisions: [local-addition, local-opt-fel]
       
     - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'jlt-lu']
-      revisions: [local-addition]
+      revisions: [local-addition, local-opt-fel]
 
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag']
-      revisions: [local-addition]
+      revisions: [local-addition, local-opt-fel]
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']

@@ -117,7 +117,6 @@ void testLaplacian(int seed, bool verbose = false) {
 
 int testEigensolver(NetworKit::Graph const &g, int count, bool verbose = false,
                     bool expe = false) {
-  SlepcAdapter solver;
   Time beforeInit;
   auto n = g.numberOfNodes();
   if (verbose) {
@@ -126,8 +125,7 @@ int testEigensolver(NetworKit::Graph const &g, int count, bool verbose = false,
   }
 
   beforeInit = std::chrono::high_resolution_clock::now();
-  solver.setup(g, 0, count);
-  solver.run_eigensolver();
+  SlepcAdapter solver(g, 0, count);
   // if(verbose) { solver.info_eigensolver(); }
   auto t = std::chrono::high_resolution_clock::now();
   auto duration = t - beforeInit;
@@ -537,9 +535,7 @@ void testSolverSetupTime(const Graph& g) {
     using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
 
     auto beforeSlepcAdapter = std::chrono::high_resolution_clock::now();
-    SlepcAdapter slepc_adapter;
-    slepc_adapter.setup(g, 100, 100);
-    slepc_adapter.run_eigensolver();
+    SlepcAdapter slepc_adapter(g, 100, 100);
     auto afterSlepcAdapter = std::chrono::high_resolution_clock::now();
     
     std::cout << "SlepcAdapter init with k=100, ne=100: " << std::chrono::duration_cast<scnds>(afterSlepcAdapter - beforeSlepcAdapter).count() << "\n";

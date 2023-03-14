@@ -2,6 +2,7 @@
 #define SLEPC_ADAPTER_H
 
 #include <iostream>
+#include <cstring>
 #include <networkit/graph/Graph.hpp>
 #include <slepceps.h>
 #include <vector>
@@ -32,11 +33,7 @@ public:
   void setup(NetworKit::Graph const &g, NetworKit::count offset,
              unsigned int numberOfEigenpairs) {
 
-    int arg_c = 0;
-    PetscErrorCode ierr = SlepcInitialize(&arg_c, NULL, (char *)0, help);
-    if (ierr) {
-      throw std::runtime_error("SlepcInitialize() not working!");
-    }
+    
     if (!numberOfEigenpairs) {
       throw std::runtime_error("Requesting no eigenpairs!");
     }
@@ -84,6 +81,50 @@ public:
     EPSSetDeflationSpace(eps, 1, &x);
   }
 
+  SlepcAdapter(const NetworKit::Graph& g, NetworKit::count offset, unsigned int numberOfEigenpairs) {
+    setup(g, offset, numberOfEigenpairs);
+    run_eigensolver();
+  }
+
+  // copy constructor
+  SlepcAdapter(const SlepcAdapter& other) :
+    k(other.k),
+    ierr(other.ierr),
+    n(other.n),
+    c(other.c),
+    nconv(other.nconv),
+    nconv_l(other.nconv_l)
+  {
+    e_vectors = (double *)calloc(1, n * c * sizeof(double));
+    e_values = (double *)calloc(1, (c + 1) * sizeof(double));
+    std::memcpy(e_vectors, other.e_vectors, n * c * sizeof(double));
+    std::memcpy(e_values, other.e_values, (c + 1) * sizeof(double));
+
+    VecDuplicate(other.x, &x);
+    VecCopy(other.x, x);
+
+    MatConvert(other.A, MATSAME, MAT_INITIAL_MATRIX, &A);
+
+    VecDuplicateVecs(other.Q[0], nconv + 1, &Q);
+    for (int i = 0 ; i < nconv + 1 ; i++) {
+      VecCopy(other.Q[i], Q[i]);
+    }
+
+    // from setup:
+    // create eps environment
+    EPSCreate(PETSC_COMM_WORLD, &eps);
+    EPSSetOperators(eps, A, NULL);
+    EPSSetProblemType(eps, EPS_HEP);
+    EPSSetFromOptions(eps);
+    // set deflation space
+    EPSSetDeflationSpace(eps, 1, &x);
+
+    // from update_eigensolver:
+    EPSSetInitialSpace(eps, nconv + 1, Q);
+  }
+
+  SlepcAdapter(SlepcAdapter&& other) noexcept = default;
+
   ~SlepcAdapter() {
     free(e_vectors);
     free(e_values);
@@ -91,7 +132,28 @@ public:
     MatDestroy(&A);
     VecDestroy(&x);
     VecDestroyVecs(nconv + 1, &Q);
-    SlepcFinalize();
+  }
+
+  SlepcAdapter& operator=(SlepcAdapter other) noexcept {
+    swap(*this, other);
+    return *this;
+  }
+
+  friend void swap(SlepcAdapter& first, SlepcAdapter& second) noexcept {
+    using std::swap;
+
+    swap(first.eps, second.eps);
+    swap(first.A, second.A);
+    swap(first.n, second.n);
+    swap(first.x, second.x);
+    swap(first.ierr, second.ierr);
+    swap(first.c, second.c);
+    swap(first.nconv, second.nconv);
+    swap(first.nconv_l, second.nconv_l);
+    swap(first.e_vectors, second.e_vectors);
+    swap(first.e_values, second.e_values);
+    swap(first.Q, second.Q);
+    swap(first.k, second.k);
   }
 
   /** Updates the eigensolver environment. To do so it resets the (updated)

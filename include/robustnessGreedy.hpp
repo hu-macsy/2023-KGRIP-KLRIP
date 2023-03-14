@@ -443,18 +443,30 @@ private:
 template <class DynamicLaplacianSolver>
 class SpecStoch : public StochasticGreedy<Edge> {
 public:
-  SpecStoch(GreedyParams params) {
-    this->g = params.g;
-    // this->originalG = params.g;
-    this->n = g.numberOfNodes();
-    this->focus_node = params.focus_node;
+  SpecStoch(GreedyParams params) : 
+    g(params.g),
+    n(g.numberOfNodes()),
+    focus_node(params.focus_node),
+    solverEpsilon(params.solverEpsilon),
+    ne(params.ne),
+    updatePerRound(params.updatePerRound),
+    diff(params.diff),
+    candidatesize(params.candidatesize),
+    solver(g, params.k, ne),
+    originalSolver(solver)
+
+  // double originalResistance = 0.;
+
+  // // ----------------------------- //
+  // double ReferenceTotalValue = 0.0;
+  // double ReferenceOriginalResistance = 0.0;
+  // double SpectralTotalValue = 0.0;
+  // double SpectralOriginalResistance = 0.0;
+  // //
+  // DynamicLaplacianSolver lap_solver;
+  {
     this->k = params.k;
     this->epsilon = params.epsilon;
-    this->solverEpsilon = params.solverEpsilon;
-    this->ne = params.ne;
-    this->updatePerRound = params.updatePerRound;
-    this->diff = params.diff;
-    this->candidatesize = params.candidatesize;
 
     if (this->k > 20)
       lap_solver.setup(
@@ -464,9 +476,12 @@ public:
       lap_solver.setup(g, params.solverEpsilon,
                        std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
 
-    solver.setup(g, this->k, ne);
+    // solver.setup(g, this->k, ne);
 
-    solver.run_eigensolver();
+    // solver.run_eigensolver();
+
+    // DEBUG("Assign solver copy");
+    // this->originalSolver = solver;
 
     this->totalValue = 0.;
     this->originalResistance = totalValue;
@@ -475,13 +490,8 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    // this->g = this->originalG;
     this->focus_node = fn;
-
-    solver.~SlepcAdapter();
-    new (&solver) SlepcAdapter();
-    solver.setup(g, this->k, ne);
-    solver.run_eigensolver();
+    this->solver = this->originalSolver;
 
     lap_solver.~DynamicLaplacianSolver();
     new (&lap_solver) DynamicLaplacianSolver();
@@ -666,11 +676,9 @@ private:
   void updateEigenpairs() { solver.update_eigensolver(); }
 
   Graph g;
-  // Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
-  SlepcAdapter solver;
   unsigned int ne = 1;
   unsigned int updatePerRound = 1;
   unsigned int diff = 1;
@@ -682,8 +690,10 @@ private:
   double SpectralTotalValue = 0.0;
   double SpectralOriginalResistance = 0.0;
   //
-  DynamicLaplacianSolver lap_solver;
   double solverEpsilon;
+  DynamicLaplacianSolver lap_solver;
+  SlepcAdapter solver;
+  SlepcAdapter originalSolver;
 };
 
 #endif // ROBUSTNESS_GREEDY_H

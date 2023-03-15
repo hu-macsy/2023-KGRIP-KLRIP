@@ -11,6 +11,8 @@
 
 class LamgDynamicLaplacianSolver : virtual public IDynamicLaplacianSolver {
 public:
+  LamgDynamicLaplacianSolver(){};
+  LamgDynamicLaplacianSolver& operator=(const LamgDynamicLaplacianSolver& other);
   virtual void setup(const Graph &g, double tol,
                      count eqnsPerRound = 200) override;
   void solveSingleColumn(node u);

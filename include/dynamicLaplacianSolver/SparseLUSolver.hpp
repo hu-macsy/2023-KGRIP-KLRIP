@@ -11,6 +11,8 @@ class SparseLUSolver : public DynamicLaplacianSolver<
                            Eigen::SparseLU<Eigen::SparseMatrix<double>,
                                            Eigen::COLAMDOrdering<int>>> {
   virtual void setup_solver() override;
+public:
+  SparseLUSolver& operator=(const SparseLUSolver& other);
 };
 
 #endif

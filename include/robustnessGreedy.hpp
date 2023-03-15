@@ -105,7 +105,6 @@ class StGreedy final : public SubmodularGreedy<Edge> {
 public:
   StGreedy(GreedyParams params) {
     this->g = params.g;
-    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -122,7 +121,6 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    // this->g = this->originalG;
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -175,7 +173,6 @@ private:
   node focus_node;
 
   Graph g;
-  // Graph originalG;
   int n;
 };
 
@@ -184,7 +181,6 @@ public:
   SimplStoch(GreedyParams params) {
 
     this->g = params.g;
-    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->k = params.k;
     this->focus_node = params.focus_node;
@@ -198,7 +194,6 @@ public:
   }
 
   virtual void reset_focus(const node& fn) override {
-    // this->g = this->originalG;
     this->focus_node = fn;
     this->lpinv = this->originalLpinv;
     this->resetItems();
@@ -254,7 +249,6 @@ private:
   Eigen::MatrixXd originalLpinv;
 
   Graph g;
-  // Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
@@ -266,7 +260,6 @@ class simplStochDyn : public StochasticGreedy<Edge> {
 public:
   simplStochDyn(GreedyParams params) {
     this->g = params.g;
-    // this->originalG = params.g;
     this->n = g.numberOfNodes();
     this->focus_node = params.focus_node;
     this->k = params.k;
@@ -282,21 +275,13 @@ public:
     else
       solver.setup(g, params.solverEpsilon,
                    std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+    originalSolver = solver;
   }
 
   virtual void reset_focus(const node& fn) override {
-    // this->g = this->originalG;
     this->focus_node = fn;
 
-    solver.~DynamicLaplacianSolver();
-    new (&solver) DynamicLaplacianSolver();
-    if (this->k > 20)
-      solver.setup(
-          g, this->solverEpsilon,
-          std::ceil(n * std::sqrt(1. / (double)(k)*std::log(1.0 / epsilon))));
-    else
-      solver.setup(g, this->solverEpsilon,
-                   std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+    solver = originalSolver;
 
     this->resetItems();
     this->hasRun = false;
@@ -432,8 +417,8 @@ private:
   virtual void useItem(Edge e) override { solver.addEdge(e.u, e.v); }
 
   DynamicLaplacianSolver solver;
+  DynamicLaplacianSolver originalSolver;
   Graph g;
-  Graph originalG;
   node focus_node;
   int n;
   double originalResistance = 0.;
@@ -475,7 +460,7 @@ public:
     else
       lap_solver.setup(g, params.solverEpsilon,
                        std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
-
+    this->originalLap_solver = lap_solver;
     // solver.setup(g, this->k, ne);
 
     // solver.run_eigensolver();
@@ -492,16 +477,7 @@ public:
   virtual void reset_focus(const node& fn) override {
     this->focus_node = fn;
     this->solver = this->originalSolver;
-
-    lap_solver.~DynamicLaplacianSolver();
-    new (&lap_solver) DynamicLaplacianSolver();
-    if (this->k > 20)
-      lap_solver.setup(
-          g, this->solverEpsilon,
-          std::ceil(n * std::sqrt(1. / (double)(k)*std::log(1.0 / epsilon))));
-    else
-      lap_solver.setup(g, this->solverEpsilon,
-                       std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+    this->lap_solver = originalLap_solver;
     this->resetItems();
     this->hasRun = false;
 
@@ -692,6 +668,7 @@ private:
   //
   double solverEpsilon;
   DynamicLaplacianSolver lap_solver;
+  DynamicLaplacianSolver originalLap_solver;
   SlepcAdapter solver;
   SlepcAdapter originalSolver;
 };

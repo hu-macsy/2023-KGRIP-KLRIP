@@ -9,6 +9,9 @@
 
 class JLTLamgSolver : virtual public IDynamicLaplacianSolver {
 public:
+  JLTLamgSolver(){};
+  JLTLamgSolver(const JLTLamgSolver& other) = default;
+  JLTLamgSolver& operator=(const JLTLamgSolver& other) = default;
   virtual void setup(const Graph &g, double tolerance,
                      count eqnsPerRound) override;
   virtual void computeColumns(std::vector<node> nodes) override;

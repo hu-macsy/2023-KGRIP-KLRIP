@@ -177,3 +177,27 @@ double LamgDynamicLaplacianSolver::totalResistanceDifferenceExact(node u,
                                                                   node v) {
   return totalResistanceDifferenceApprox(u, v);
 }
+
+LamgDynamicLaplacianSolver& LamgDynamicLaplacianSolver::operator=(const LamgDynamicLaplacianSolver& other) {
+  if (this == &other) return *this;
+  this->colAge = other.colAge;
+  this->cols = other.cols;
+  this->updateVec = other.updateVec;
+  this->updateW = other.updateW;
+  this->n = other.n;
+  this->round = other.round;
+  this->laplacian = other.laplacian;
+  this->rChange = other.rChange;
+  this->computedColumns = other.computedColumns;
+  this->roundsPerSolverUpdate = other.roundsPerSolverUpdate;
+  this->ageToRecompute = other.ageToRecompute;
+  this->solverAge = other.solverAge;
+  this->tolerance = other.tolerance;
+
+  // from setup()
+  lamg.~Lamg<CSRMatrix>();
+  new (&lamg) Lamg<CSRMatrix>(tolerance);
+  lamg.setup(laplacian);
+
+  return *this;
+}

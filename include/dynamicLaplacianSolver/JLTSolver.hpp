@@ -10,6 +10,9 @@
 template <class MatrixType, class DynamicSolver>
 class JLTSolver : virtual public IDynamicLaplacianSolver {
 public:
+  JLTSolver(){};
+  JLTSolver(const JLTSolver& other) = default;
+  JLTSolver& operator=(const JLTSolver& other) = default;
   virtual void setup(const Graph &g, double tolerance,
                      count eqnsPerRound) override;
   virtual void computeColumns(std::vector<node> nodes) override;

@@ -35,7 +35,6 @@ public:
 
 private:
   Graph &G;
-  Graph originalG;
   std::vector<Edge> results;
   node focus_node;
 
@@ -57,6 +56,7 @@ private:
   std::unique_ptr<ApproxElectricalCloseness> apx;
   std::unique_ptr<ApproxElectricalCloseness> originalApx;
   DynamicLaplacianSolver solver;
+  DynamicLaplacianSolver originalSolver;
 
   std::set<node> knownColumns;
 

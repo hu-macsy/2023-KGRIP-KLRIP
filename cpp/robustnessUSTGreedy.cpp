@@ -15,7 +15,6 @@ inline bool operator<(const QueueItem &left, const QueueItem &right) {
 
 template <class DynamicLaplacianSolver>
 ColStoch<DynamicLaplacianSolver>::ColStoch(GreedyParams params) : G(params.g) {
-  this->originalG = params.g;
   this->n = G.numberOfNodes();
   this->k = params.k;
   this->focus_node = params.focus_node;
@@ -31,6 +30,7 @@ ColStoch<DynamicLaplacianSolver>::ColStoch(GreedyParams params) : G(params.g) {
   else
     solver.setup(G, params.solverEpsilon,
                  std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
+  this->originalSolver = solver;
   this->totalValue = 0.;
   this->originalResistance = 0.;
   this->always_use_known_columns_as_candidates =
@@ -62,20 +62,12 @@ void ColStoch<DynamicLaplacianSolver>::reset_focus(const node &fn) {
   for (auto edge : this->results)
     this->G.removeEdge(edge.u, edge.v);
   DEBUG("ColStoch::reset_focus: done removing edges");
-  assert(this->G.numberOfEdges() == this->originalG.numberOfEdges());
-  // this->G = this->originalG;
   this->focus_node = fn;
   this->round = 0;
 
-  DEBUG("ColStoch::reset_focus: destruct and re-initialize laplacian solver");
-  solver.~DynamicLaplacianSolver();
-  new (&solver) DynamicLaplacianSolver();
-  if (this->k > 20)
-    solver.setup(G, this->solverEpsilon, numberOfNodeCandidates());
-  else
-    solver.setup(G, this->solverEpsilon,
-                 std::ceil(n * std::sqrt(std::log(1.0 / epsilon))));
-  DEBUG("ColStoch::reset_focus: laplacian solver reinitialized.");
+  DEBUG("ColStoch::reset_focus: copy original laplacian solver");
+  this->solver = this->originalSolver;
+  DEBUG("ColStoch::reset_focus: laplacian solver copied.");
   this->totalValue = 0.;
   this->originalResistance = 0.;
 

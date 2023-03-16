@@ -58,6 +58,12 @@ revisions:
   - name: local-opt-fel
     build_version:
       'graph-robustness-k': 'local-addition-opt-fel'
+  - name: local-addition-solver-copy  # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
+    build_version:
+      'graph-robustness-k': '9450cb77a8c175ed673cff606c37c844140bd481'
+  - name: local-opt-fel-solver-copy   # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
+    build_version:
+      'graph-robustness-k': '09efa6a351bd32ff7f7f5ffff16696a8081a521d'
 
 variants:
   - axis: 'k-size'
@@ -233,31 +239,31 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size', 'num-focus-nodes', 'focus-seed']
-      revisions: [local-addition, local-opt-fel]
+      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9']
-      revisions: [local-addition, local-opt-fel]
+      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
       
     - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'jlt-lu']
-      revisions: [local-addition, local-opt-fel]
+      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag']
-      revisions: [local-addition, local-opt-fel]
+      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['ne_50', 'dense-lu']
-      revisions: [local-addition]
+      revisions: [local-addition, local-addition-solver-copy, local-opt-fel-solver-copy]
   
 
 

@@ -318,6 +318,12 @@ public:
         std::cout << "    Eigenpairs:  " << (double)(100 * ne) / n << "\n";
         std::cout << "    ne:  " << ne << "\n";
         std::cout << "    Max Eigenvalue:  " << greedy->getMaxEigenvalue() << "\n";
+        std::cout << "    Cth Eigenvalues:  [";
+        for (auto lambda : greedy->getCthEigenvalues()) {
+          std::cout << lambda << ", ";
+        }
+        std::cout << "]\n" << std::endl;
+        std::cout.flush();
         std::cout << "    Diff2:  " << diff << "\n";
         std::cout << "    UpdatePerRound:  " << updatePerRound << "\n";
       }

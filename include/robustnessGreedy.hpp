@@ -472,6 +472,7 @@ public:
     this->originalResistance = totalValue;
     this->SpectralOriginalResistance =
         solver.SpectralToTalEffectiveResistance();
+    lambda_c_collection.push_back(solver.get_cth_eigenvalue());
   }
 
   virtual void reset_focus(const node& fn) override {
@@ -485,6 +486,8 @@ public:
     this->originalResistance = totalValue;
     this->SpectralOriginalResistance =
         solver.SpectralToTalEffectiveResistance();
+    this->lambda_c_collection.clear();
+    lambda_c_collection.push_back(solver.get_cth_eigenvalue());
   }
 
   virtual void addDefaultItems() override {
@@ -517,6 +520,10 @@ public:
   double getSpectralResultValue() override {
     this->SpectralTotalValue = solver.SpectralToTalEffectiveResistance();
     return this->SpectralTotalValue;
+  }
+
+  std::vector<double> getCthEigenvalues() {
+    return lambda_c_collection;
   }
 
   double getSpectralOriginalResistance() override {
@@ -642,6 +649,8 @@ private:
 
     if (!(this->round % updatePerRound))
       updateEigenpairs();
+    
+    lambda_c_collection.push_back(solver.get_cth_eigenvalue());
   }
 
   void cutOff() {
@@ -665,6 +674,7 @@ private:
   double ReferenceOriginalResistance = 0.0;
   double SpectralTotalValue = 0.0;
   double SpectralOriginalResistance = 0.0;
+  std::vector<double> lambda_c_collection;
   //
   double solverEpsilon;
   DynamicLaplacianSolver lap_solver;

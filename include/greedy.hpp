@@ -33,6 +33,7 @@ public:
   virtual double getSpectralResultValue() { return 0.0; };
   virtual double getSpectralOriginalResistance() { return 0.0; };
   virtual double getMaxEigenvalue() { return 0.0; };
+  virtual std::vector<double> getCthEigenvalues() {return {}; };
 };
 
 template <class Item> struct _ItemWrapperType {

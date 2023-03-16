@@ -285,6 +285,11 @@ public:
   double get_max_eigenvalue() const { return e_values[nconv]; }
 
   /**
+   * @return cth eigenvalue.
+   */
+  double get_cth_eigenvalue() const { return e_values[nconv - 1]; }
+
+  /**
    * @return number of converged eigenvalues.
    */
   PetscInt get_nconv() const { return nconv; }

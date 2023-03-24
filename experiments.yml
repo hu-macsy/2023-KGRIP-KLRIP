@@ -256,7 +256,7 @@ matrix:
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'lamg', 'jlt-lamg']
       revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['specStoch']

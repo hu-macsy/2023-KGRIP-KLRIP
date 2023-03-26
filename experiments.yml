@@ -120,6 +120,8 @@ variants:
     items:
       - name: 'focus-100'
         extra_args: ['-nf', '100']
+      - name: 'focus-50'
+        extra_args: ['-nf', '50']
   - axis: 'focus-seed'
     items:
       - name: 'fseed1'
@@ -239,31 +241,63 @@ matrix:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
       axes: ['k-size', 'num-focus-nodes', 'focus-seed']
+      variants: ['focus-100']
       revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['simplStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9']
+      variants: ['eps_0.9', 'focus-100']
       revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
       
     - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'jlt-lu']
+      variants: ['eps_0.9', 'jlt-lu', 'focus-100']
       revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'lamg', 'jlt-lamg']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'lamg', 'jlt-lamg', 'focus-100']
       revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
 
     - experiments: ['specStoch']
       instsets: ['medium-graphs']
       axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['ne_50', 'dense-lu']
+      variants: ['ne_50', 'dense-lu', 'focus-100']
       revisions: [local-addition, local-addition-solver-copy, local-opt-fel-solver-copy]
+      
+     # similar to above, but focus 50 nodes and k<=20 and skip some less interesting variants:
+    - experiments: ['stGreedy']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'num-focus-nodes', 'focus-seed']
+      variants: ['focus-50', 'k-2', 'k-5', 'k-20']
+      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
+
+    - experiments: ['simplStoch']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9', 'focus-50', 'k-2', 'k-5', 'k-20']
+      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
+      
+    - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9', 'jlt-lu', 'focus-50', 'k-2', 'k-5', 'k-20']
+      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
+
+    - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
+      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'focus-50', 'k-2', 'k-5', 'k-20']
+      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
+
+    - experiments: ['specStoch']
+      instsets: ['medium-graphs']
+      axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
+      variants: ['ne_50', 'dense-lu', 'focus-50', 'k-2', 'k-5', 'k-20']
+      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
   
 
 

@@ -271,11 +271,13 @@ public:
       
       // Run greedy
       
-      auto beforeRun = std::chrono::high_resolution_clock::now();
+      auto beforeReset = std::chrono::high_resolution_clock::now();
       greedy->reset_focus(focus_node);
+      auto beforeRun = std::chrono::high_resolution_clock::now();
       greedy->run();
       auto t = std::chrono::high_resolution_clock::now();
-      auto duration = t - beforeRun;
+      auto duration = t - beforeReset;
+      auto duration_reset = beforeRun - beforeReset;
 
       // Verify Results
       if (!greedy->isValidSolution()) {
@@ -304,6 +306,9 @@ public:
       using scnds = std::chrono::duration<float, std::ratio<1, 1>>;
       std::cout << "    Time:    "
                 << std::chrono::duration_cast<scnds>(duration).count() << "\n";
+      std::cout << "    Reset Time:    "
+                << std::chrono::duration_cast<scnds>(duration_reset).count() << "\n";
+
 
       if (alg == AlgorithmType::specStoch) {
         double spectralResultResistance = greedy->getSpectralResultValue();

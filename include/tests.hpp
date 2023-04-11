@@ -553,21 +553,21 @@ void testSolverSetupTime(const Graph& g) {
     lusolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
     auto afterLU = std::chrono::high_resolution_clock::now();
     
-    std::cout << "LU init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+    std::cout << "LU init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLU - beforeLU).count() << "\n";
 
     auto beforeJLTLamg = std::chrono::high_resolution_clock::now();
     JLTLamgSolver jltlamgsolver;
     jltlamgsolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
     auto afterJLTLamg = std::chrono::high_resolution_clock::now();
     
-    std::cout << "Lamg JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+    std::cout << "Lamg JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterJLTLamg - beforeJLTLamg).count() << "\n";
 
     auto beforeJLTLU = std::chrono::high_resolution_clock::now();
     JLTLUSolver jltlusolver;
     jltlusolver.setup(g, 0.9, std::ceil(g.numberOfNodes() * std::sqrt(1. / (double)(100)*std::log(1.0 / 0.9))));
     auto afterJLTLU = std::chrono::high_resolution_clock::now();
     
-    std::cout << "LU JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterLamg - beforeLamg).count() << "\n";
+    std::cout << "LU JLT init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterJLTLU - beforeJLTLU).count() << "\n";
 
     auto beforeAPX = std::chrono::high_resolution_clock::now();
     auto apx = std::make_unique<ApproxElectricalCloseness>(g, 10);
@@ -577,7 +577,45 @@ void testSolverSetupTime(const Graph& g) {
     
     std::cout << "ApproxElectricalCloseness init with k=100, eps=0.9: " << std::chrono::duration_cast<scnds>(afterAPX - beforeAPX).count() << "\n";
 
+    // copy timing
+     SlepcAdapter slepc_adapter_copy(g, 1, 1);
+    auto beforeSlepcAdapterCopy = std::chrono::high_resolution_clock::now();
+    slepc_adapter_copy = slepc_adapter;
+    auto afterSlepcAdapterCopy = std::chrono::high_resolution_clock::now();
+    std::cout << "SlepcAdapter copy assign: " << std::chrono::duration_cast<scnds>(afterSlepcAdapterCopy - beforeSlepcAdapterCopy).count() << "\n";
 
+    LamgDynamicLaplacianSolver lamgcopy;
+    auto beforeLamgCopy = std::chrono::high_resolution_clock::now();
+    lamgcopy = lamgsolver;
+    auto afterLamgCopy = std::chrono::high_resolution_clock::now();
+    std::cout << "Lamg copy assign: " << std::chrono::duration_cast<scnds>(afterLamgCopy - beforeLamgCopy).count() << "\n";
+
+    JLTLamgSolver jltlamgcopy;
+    auto beforeJLTLamgCopy = std::chrono::high_resolution_clock::now();
+    jltlamgcopy = jltlamgsolver;
+    auto afterJLTLamgCopy = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Lamg JLT copy assign: " << std::chrono::duration_cast<scnds>(afterJLTLamgCopy - beforeJLTLamgCopy).count() << "\n";
+
+    SparseLUSolver lucopy;
+    auto beforeLUCopy = std::chrono::high_resolution_clock::now();
+    lucopy = lusolver;
+    auto afterLUCopy = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "LU copy assign: " << std::chrono::duration_cast<scnds>(afterLUCopy - beforeLUCopy).count() << "\n";
+
+    JLTLUSolver jltlucopy;
+    auto beforeJLTLUCopy = std::chrono::high_resolution_clock::now();
+    jltlucopy = jltlusolver;
+    auto afterJLTLUCopy = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "LU JLT copy assign: " << std::chrono::duration_cast<scnds>(afterJLTLUCopy - beforeJLTLUCopy).count() << "\n";
+
+    auto beforeAPXCopy = std::chrono::high_resolution_clock::now();
+    auto apxcopy = std::make_unique<ApproxElectricalCloseness>(*apx);
+    auto afterAPXCopy = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "ApproxElectricalCloseness copy assign: " << std::chrono::duration_cast<scnds>(afterAPXCopy - beforeAPXCopy).count() << "\n";
 
 }
 

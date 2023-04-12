@@ -1,22 +1,28 @@
 # Graph Robustness
 
+This repository contains code related to the paper "Greedy Optimization of Resistance-based Graph Robustness with Global and Local Edge Insertions".
 
         
 ## Installation and Building
 
 
-    git clone https://gitlab.informatik.hu-berlin.de/macsy/code-staff/graph-robustness-k.git
-
-    cd graph-robustness-k
+    git clone https://github.com/hu-macsy/2023-KGRIP-KLRIP.git
+    cd 2023-KGRIP-KLRIP
         
 ### Requirements
         
-Initialize submodules. Access to the separate NetworKit fork at https://gitlab.informatik.hu-berlin.de/goergmat/networkit-robustness is required.
+Initialize submodules. 
 
     git submodule update --init --recursive
 
-* Eigen (currently assumed to be in _eigen_ folder in root)    
-* PETSc and SLEPc. Set environment variables PETSC_DIR, SLEPC_DIR and PETSC_ARCH accordingly
+This will initialize some libraries:
+* A [NetworKit](https://networkit.github.io/) fork with some additions which are not integrated into NetworKit yet. The fork is hosted at https://gitlab.informatik.hu-berlin.de/goergmat/networkit-robustness
+* [Eigen](https://eigen.tuxfamily.org)
+
+Additionally:
+* The [PETSc](https://petsc.org) and [SLEPc](https://slepc.upv.es/) libraries are required (available on most packet managers). Install them and make sure that the environment variables `PETSC_DIR`, `SLEPC_DIR` and `PETSC_ARCH` are set accordingly. 
+* MPI is required as well and should be the same version that PETSc is build for.
+* If cmake does not find PETSc / SLEPc, set pkg config path: `export PKG_CONFIG_PATH=$SLEPC_DIR/$PETSC_ARCH/lib/pkgconfig:$PETSC_DIR/$PETSC_ARCH/lib/pkgconfig/:$PKG_CONFIG_PATH`
 
 ### Building
 
@@ -27,21 +33,22 @@ Initialize submodules. Access to the separate NetworKit fork at https://gitlab.i
 
 To run python scripts with the NetworKit fork, install the submodule (you should use a venv)
 
+    cd ..
     pip install -e networkit
 
 
 ## Download Instances
 
-    cd ..
     python3 load_instances.py
 
 
 ## Usage
 
-Example. Run main algorithm, k=20, ε=0.9, ε_UST = 10, using LAMG, 6 threads. 
+### Basic Example
 
-    cd build
-    ./robustness -a6 -i ../instances/facebook_ego_combined -k 20 -eps 0.9 -eps2 10 --lamg -j 6
+Run `colStoch` algorithm, k=20, ε=0.9, ε_UST = 10, using LAMG, 6 threads. 
+
+    build/robustness -a6 -i ../instances/facebook_ego_combined -k 20 -eps 0.9 -eps2 10 --lamg -j 6
 
 
 For more details see help string
@@ -49,10 +56,17 @@ For more details see help string
     ./robustness --help
 
 
-## Simex Setup on Cluster
+### With Simexpal
 
-* clone repo
-* Change instdir in [experiments.yml](experiments.yml)
-* set env variables: `PETSC_DIR`, `PETSC_ARCH`, `SLEPC_DIR` (currently: /home/berneluk/robustness/... ; todo: change to /opt)
-* set pkg config path: `export PKG_CONFIG_PATH=$SLEPC_DIR/$PETSC_ARCH/lib/pkgconfig:$PETSC_DIR/$PETSC_ARCH/lib/pkgconfig/:$PKG_CONFIG_PATH`
-* `simex b make`
+If necessary, change `instdir` in [experiments.yml](experiments.yml) and make sure that the requirements as listed above are met.
+
+    simex b make
+    simex e launch [...]
+    
+Read the [Simexpal docs](https://simexpal.readthedocs.io) for details.
+
+To create figures for k-GRIP:
+
+    python3 eval.py
+
+Look at [eval_local_addition.ipynb](eval_local_addition.ipynb) for figures for k-LRIP.

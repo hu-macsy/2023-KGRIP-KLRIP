@@ -42,10 +42,6 @@ def dl_txt_gz(url, name):
     dl(url, name)
     error = os.system(f"gunzip /tmp/{name} -c > instances/{name}")
 
-def csv_to_inst(in_path, name):
-    os.system("tail -n +2 {0} | sed -e 's/,/ /g' > {1}".format(in_path, "instances/" + name))
-    txt_to_inst(name)
-
 def mtx_to_inst(in_path, name):
     # Remove comments and first line
     s = ""
@@ -73,13 +69,6 @@ def dl_zip(url, archive_path_to_instance, name):
         return False
     dl(url, name+".zip")
     os.system(f"unzip -o /tmp/{name}.zip -d /tmp/")
-
-def load_deezer_europe_instance():
-    if os.path.isfile("instances/deezer_europe.nkb"):
-        return False
-    dl("https://snap.stanford.edu/data/deezer_europe.zip", "deezer_europe.zip")
-    os.system("unzip /tmp/deezer_europe.zip -d /tmp/")
-    csv_to_inst("/tmp/deezer_europe/deezer_europe_edges.csv", "deezer_europe")
 
 def gen_er_inst(n, p, seed=1):
     name = f"erdos_renyi_{n}_{p}"
@@ -123,14 +112,14 @@ if __name__ == "__main__":
         os.system("mkdir instances")
 
     dl_txt_gz("https://snap.stanford.edu/data/facebook_combined.txt.gz", "facebook_ego_combined")
-    # maria: change as below..
     txt_to_inst("facebook_ego_combined", "\t", 0, "#", False, "instances/facebook_ego_combined")
+
     dl_txt_gz("https://snap.stanford.edu/data/ca-AstroPh.txt.gz", "arxiv-astro-ph")
     txt_to_inst("arxiv-astro-ph", "\t", 0, "#", False, "instances/arxiv-astro-ph")
+
     dl_txt_gz("https://snap.stanford.edu/data/ca-HepPh.txt.gz", "arxiv-heph")
     txt_to_inst("arxiv-heph", "\t", 0, "#", False, "instances/arxiv-heph")
 
-    # lukas: add networks listed in kgrip paper
     load_snap_stanford("wiki-Vote")
     load_snap_stanford("p2p-Gnutella09")
     load_snap_stanford("p2p-Gnutella04")
@@ -142,11 +131,8 @@ if __name__ == "__main__":
     dl_zip("https://nrvis.com/download/data/inf/inf-power.zip", "inf-power.mtx", "inf-power")
     mtx_to_inst("/tmp/inf-power.mtx", "inf-power")
 
-
     dl_zip("https://nrvis.com/download/data/ia/ia-email-EU.zip", "ia-email-EU.mtx", "ia-email-EU")
     mtx_to_inst("/tmp/ia-email-EU.mtx", "ia-email-EU")
-
-    # lukas: add networks listed in kgrip paper
 
     dl_zip("https://nrvis.com/download/data/web/web-spam.zip", "web-spam.mtx", "web-spam")
     mtx_to_inst("/tmp/web-spam.mtx", "web-spam")
@@ -169,7 +155,6 @@ if __name__ == "__main__":
     # maria: konect.cc not connecting..
     # dl_tar_bz2("http://konect.cc/files/download.tsv.flickrEdges.tar.bz2", "flickrEdges/out.flickrEdges", "flickr")
     # txt_to_inst("flickr", " ", 1, "%")
-
 
     gen_er_inst(1000, 0.02)
 

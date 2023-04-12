@@ -1,15 +1,15 @@
 experiments:
-  - name: stGreedy  # submodular greedy
+  - name: stGreedy
     args: ['robustness', '-a1', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     timeout: 43200
-  - name: simplStoch # stochastic greedy
+  - name: simplStoch
     args: ['robustness', '-a2', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     timeout: 43200
-  - name: simplStochDyn # stochastic greedy with LinAlg solver instead of full Lpinv
+  - name: simplStochDyn # simplStoch with LinAlg solver instead of full Lpinv
     args: ['robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
@@ -29,21 +29,22 @@ experiments:
     stdout: out
     use_builds: [graph-robustness-k] 
     
-  - name: stGreedy_single  # submodular greedy
+  # the '*_single' experiments are configured such that slurm allocates all cores on a node of our cluster, preventing interferences from other runs.
+  - name: stGreedy_single
     args: ['robustness', '-a1', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     timeout: 21600
     procs_per_node: 24
     num_threads: 24
-  - name: simplStoch_single # stochastic greedy
+  - name: simplStoch_single
     args: ['robustness', '-a2', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
     timeout: 21600
     procs_per_node: 24
     num_threads: 24
-  - name: simplStochDyn_single # stochastic greedy with LinAlg solver instead of full Lpinv
+  - name: simplStochDyn_single
     args: ['robustness', '-a3', '-i', '@INSTANCE@', '@EXTRA_ARGS@', ]
     stdout: out
     use_builds: [graph-robustness-k]
@@ -67,7 +68,7 @@ experiments:
 
 builds:
   - name: graph-robustness-k
-    git: https://gitlab.informatik.hu-berlin.de/berneluk/robustness
+    git: https://github.com/hu-macsy/2023-KGRIP-KLRIP
     recursive-clone: true
     configure:
       - args:
@@ -88,24 +89,9 @@ revisions:
   - name: k-grip
     build_version:
       'graph-robustness-k': '13ac360771b7a3e8baf2c5d13a658f156b8002c6'
-  - name: local-addition
-    build_version:
-      'graph-robustness-k': 'local-edge-addition'
-  - name: local-opt-fel
-    build_version:
-      'graph-robustness-k': 'local-addition-opt-fel'
-  - name: local-addition-solver-copy  # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
-    build_version:
-      'graph-robustness-k': '9450cb77a8c175ed673cff606c37c844140bd481'
-  - name: local-opt-fel-solver-copy   # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
-    build_version:
-      'graph-robustness-k': '09efa6a351bd32ff7f7f5ffff16696a8081a521d'
-  - name: local-addition-v3  # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
+  - name: k-lrip
     build_version:
       'graph-robustness-k': '00b965f011b1c195df60aead3a5a1000b05f3bce'
-  - name: local-opt-fel-v3   # this version creates a copy of the initial solver state to reset to. Additionally, G is now reset by removing edges and no longer stored as copy
-    build_version:
-      'graph-robustness-k': '463e3d83847612ee7a157476b95344dc03fe6b34'
 
 variants:
   - axis: 'k-size'
@@ -175,7 +161,7 @@ variants:
 instdir: "/work/global/robustness_graphs"
 instances:
   - repo: local
-    set: [medium-graphs, additional-exhaustive-search]
+    set: [medium-graphs]
     items: 
       - inf-power.nkb
       - facebook_ego_combined
@@ -185,14 +171,11 @@ instances:
       - p2p-Gnutella04.nkb
       - web-indochina-2004.nkb
       - arxiv-heph.nkb
-  - repo: local
-    set: [medium-graphs]
-    items:
-    - web-webbase-2001.nkb
-    - arxiv-astro-ph.nkb
-    - as-caida20071105.nkb
-    - cit-HepTh.nkb
-    - ia-email-EU.nkb
+      - web-webbase-2001.nkb
+      - arxiv-astro-ph.nkb
+      - as-caida20071105.nkb
+      - cit-HepTh.nkb
+      - ia-email-EU.nkb
   - repo: local
     set: [large-graphs]
     items: 
@@ -202,23 +185,11 @@ instances:
       - livemocha.nkb
       - road-usroads.nkb
       - flickrEdges.nkb
-  - repo: local
-    set: [configuration-exp-exhaustive-search]
-    items:
-      - erdos_renyi_1000_0.02.nkb
-      - watts_strogatz_1000_7_0.3.nkb
-      - barabasi_albert_2_1000_2.nkb
 
-# matrix constructed from paper description
+
 matrix:
   include:
     ## Configuration experiments
-
-    # Verfiy stGreedy quality
-    - experiments: ['stGreedy', 'exhaustive-search']
-      instsets: ['configuration-exp-exhaustive-search']
-      axes: ['k-size']
-      revisions: [k-grip, local-addition]
 
     # performance of simplStoch for different accuracy values
     - experiments: ['simplStoch']
@@ -232,14 +203,8 @@ matrix:
       variants: ['k-2','k-20','eps_0.99']
       revisions: [k-grip]
     
-    # determine quality of the gain approx (eq 15) for specStoch
-    # todo?
-
-    # different solvers for the solution of laplacian linear systems
-    # todo/nicht so eindeutig was angeguckt wurde
-
     
-    ## comparision to state of the art
+    ## k-GRIP
     # medium graphs:
     - experiments: ['stGreedy']
       instsets: ['medium-graphs']
@@ -273,376 +238,34 @@ matrix:
     # large graphs: (TODO)
 
 
-    ## new stuff
-
-    # run exhaustive search on some medium graphs
-    - experiments: ['exhaustive-search']
-      instsets: ['additional-exhaustive-search']
-      axes: ['k-size']
-      revisions: [k-grip]
-
-    # local addition with medium graphs:
-    - experiments: ['stGreedy']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'num-focus-nodes', 'focus-seed']
-      variants: ['focus-100']
-      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['simplStoch']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'focus-100']
-      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
-      
-    - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'jlt-lu', 'focus-100']
-      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'lamg', 'jlt-lamg', 'focus-100']
-      revisions: [local-addition, local-opt-fel, local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['specStoch']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['ne_50', 'dense-lu', 'focus-100']
-      revisions: [local-addition, local-addition-solver-copy, local-opt-fel-solver-copy]
-      
-     # similar to above, but focus 50 nodes and k<=20 and skip some less interesting variants:
-    - experiments: ['stGreedy']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'num-focus-nodes', 'focus-seed']
-      variants: ['focus-50', 'k-2', 'k-5', 'k-20']
-      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['simplStoch']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'focus-50', 'k-2', 'k-5', 'k-20']
-      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
-      
-    - experiments: ['simplStochDyn'] # with JLT LinAlg solvers this is simplStochJLT
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'jlt-lu', 'focus-50', 'k-2', 'k-5', 'k-20']
-      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['colStoch'] # colStoch and colStochJLT (depending on LinAlg variant)
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'focus-50', 'k-2', 'k-5', 'k-20']
-      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
-
-    - experiments: ['specStoch']
-      instsets: ['medium-graphs']
-      axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['ne_50', 'dense-lu', 'focus-50', 'k-2', 'k-5', 'k-20']
-      revisions: [local-addition-solver-copy, local-opt-fel-solver-copy]
-    
-    
-     # same experiments, but each one runs on a node on its own, without interference from other slurm jobs. still running single-threaded though.
-     # similar to above, but focus 25 nodes and k<=20 and skip some less interesting variants:
+    ## k-LRIP
     - experiments: ['stGreedy_single']
       instsets: ['medium-graphs']
       axes: ['k-size', 'num-focus-nodes', 'focus-seed']
       variants: ['focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
+      revisions: [k-lrip]
 
     - experiments: ['simplStoch_single']
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
+      revisions: [k-lrip]
       
     - experiments: ['simplStochDyn_single'] # with JLT LinAlg solvers this is simplStochJLT
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'jlt-lu', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
+      revisions: [k-lrip]
 
     - experiments: ['colStoch_single'] # colStoch and colStochJLT (depending on LinAlg variant)
       instsets: ['medium-graphs']
       axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
       variants: ['eps_0.9', 'dense-lu', 'jlt-lu', 'ust-diag', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
+      revisions: [k-lrip]
 
     - experiments: ['specStoch_single']
       instsets: ['medium-graphs']
       axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
       variants: ['ne_50', 'dense-lu', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
-      
-    # large graphs
-    - experiments: ['stGreedy_single']
-      instsets: ['large-graphs']
-      axes: ['k-size', 'num-focus-nodes', 'focus-seed']
-      variants: ['focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
-
-    - experiments: ['simplStoch_single']
-      instsets: ['large-graphs']
-      axes: ['k-size', 'accuracy', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
-      
-    - experiments: ['simplStochDyn_single'] # with JLT LinAlg solvers this is simplStochJLT
-      instsets: ['large-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'jlt-lamg', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
-
-    - experiments: ['colStoch_single'] # colStoch and colStochJLT (depending on LinAlg variant)
-      instsets: ['large-graphs']
-      axes: ['k-size', 'accuracy', 'linalg', 'accuracy_trees', 'heuristic', 'num-focus-nodes', 'focus-seed']
-      variants: ['eps_0.9', 'lamg', 'jlt-lamg', 'ust-diag', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
-
-    - experiments: ['specStoch_single']
-      instsets: ['large-graphs']
-      axes: ['k-size', 'ne', 'linalg', 'num-focus-nodes', 'focus-seed']
-      variants: ['ne_50', 'lamg', 'focus-25', 'k-2', 'k-5', 'k-20']
-      revisions: [local-opt-fel-v3, local-addition-v3]
+      revisions: [k-lrip]
   
-
-
-# copy from old experiments.yml - to look at later
-################################################################################################
-
-# stochastic spectral on all graphs -- setting for solver and eigenvalue count of aroud 100-150 for all graphs. TODO check to set eps to 0.9 for stochastic part.
-# # small
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['g4k']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_45', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwiki']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_70', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella9']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella4']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcahep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_120', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setastro']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_170', 'jd-bjacobi']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setpower']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-lu']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setchina']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-lu']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwebbase']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_160', 'jd-lu']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcithep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi']              
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setemail']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-lu']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcaida']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi']              
-# # #####  !!       
-
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcaida','g4k','setcahep','setnutella4','setnutella9','setastro', 'setwiki','setcithep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'linalg', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_50', 'jd-bjacobi','dense-lu','mid2','mid3']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setpower', 'setwebbase','setchina','setemail']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'linalg', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_50', 'jd-lu','dense-lu','mid2','mid3']       
-
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['medium','large-complex']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'linalg', 'solver_setting','objective']
-#        variants: ['k-2','k-20','eps_0.99', 'singlecore', 'ne_70', 'jd-bjacobi','lamg','mid2']       
-
-# #     - experiments: ['stochastic-spectral']
-# #       instsets: ['large-road']
-# #       axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'linalg', 'solver_setting','objective']
-# #       variants: ['k-20','eps_0.99', 'singlecore', 'ne_70', 'jd-lu','lamg','mid2']       
-
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['large-road']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'linalg', 'solver_setting','objective']
-#        variants: ['k-2','k-20','eps_0.99', 'singlecore', 'ne_70', 'jd-lu','jd-bjacobi','lamg','mid3']       
-
-
-
-# # ### medium (wikitalk, loc-brightkite, soc-slash)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['medium']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-# #        variants: ['k-2','eps_0.99', 'singlecore', 'ne_270', 'jd-bjacobi']
-# # ### large-complex (flickr, livemocha,)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['large-complex']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-# #        variants: ['k-2','eps_0.99', 'singlecore', 'ne_420', 'jd-bjacobi']
-# # ### large-road (road-us)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['large-road']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting']
-# #        variants: ['k-2','eps_0.99', 'singlecore', 'ne_500', 'jd-lu']
-
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['g4k']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_40', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwiki']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_70', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella9']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella4']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcahep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_120', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setastro']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_170', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setpower']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setchina']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwebbase']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_160', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcithep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi','diff2']              
-# ########
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setemail']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcaida']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting', 'objective']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi','diff2']              
-# #### DIFF2 UR2 ######
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['g4k']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_40', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwiki']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_70', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella9']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setnutella4']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcahep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_120', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setastro']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_170', 'jd-bjacobi','diff2']       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setpower']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_90', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setchina']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_110', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setwebbase']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_160', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcithep']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi','diff2']              
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setemail']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-lu','diff2']
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['setcaida']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['eps_0.9', 'singlecore', 'ne_200', 'jd-bjacobi','diff2']              
-# # ### medium (loc-brightkite, soc-slash)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['medium']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-# #        variants: ['k-20','eps_0.99', 'singlecore', 'ne_100', 'jd-bjacobi','diff2']
-# #  ### large-complex (wiki-talk, flickr, livemocha,)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['large-complex']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-# #        variants: ['k-20','eps_0.99', 'singlecore', 'ne_100', 'jd-bjacobi','diff2']
-# #  ### large-road (road-us)
-# #      - experiments: ['stochastic-spectral']
-# #        instsets: ['large-road']
-# #        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-# #        variants: ['k-20','eps_0.99', 'singlecore', 'ne_100', 'jd-lu','diff2']
-       
-# # ### medium (loc-brightkite, soc-slash)
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['medium']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['k-2','k-20','eps_0.99', 'singlecore', 'ne_270', 'jd-bjacobi','diff2']
-#  ### large-complex (wiki-talk, flickr, livemocha,)
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['large-complex']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['k-2','k-20','eps_0.99', 'singlecore', 'ne_300', 'jd-bjacobi','diff2']
-#  ### large-road (road-us)
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['large-road']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['k-2','eps_0.99', 'singlecore', 'ne_360', 'jd-lu','diff2'] 
-       
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['large-road']
-#        axes: ['k-size-const', 'threads', 'accuracy', 'ne', 'solver_setting','objective', 'update_round']
-#        variants: ['k-20','eps_0.99', 'singlecore', 'ne_100', 'jd-lu','diff2'] 
-            
-# ### generated
-#      - experiments: ['stochastic-spectral']
-#        instsets: ['generate']
-#        axes: ['threads', 'solver_setting', 'test_esolve']
-#        variants: ['singlecore','jd-bjacobi']
